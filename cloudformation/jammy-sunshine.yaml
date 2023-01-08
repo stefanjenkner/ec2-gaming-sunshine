@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub '${AWS::StackName}-instance-profile'
+      Path: "/"
+      Roles:
+      - ec2-gaming
+  LaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Properties:
+      LaunchTemplateName: !Sub '${AWS::StackName}-launch-template'
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn: !GetAtt
+            - InstanceProfile
+            - Arn
+        NetworkInterfaces:
+          - DeviceIndex: 0
+            AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            SubnetId: subnet-b859bfc3
+            Groups:
+              - sg-0b9b66ec89b9a0a15 # ec2-gaming
+              - sg-013098d8f62f879c9 # sunsine
+        BlockDeviceMappings:
+          - Ebs:
+              VolumeSize: 10
+              VolumeType: gp2
+              DeleteOnTermination: true
+              Encrypted: true
+            DeviceName: /dev/sda1
+        ImageId: ami-06ce824c157700cd2
+        InstanceType: g4dn.xlarge
+        KeyName: ec2-gaming
+        InstanceMarketOptions:
+          MarketType: spot
+          SpotOptions:
+            InstanceInterruptionBehavior: stop
+            # MaxPrice - pay the current Spot price
+            SpotInstanceType: persistent

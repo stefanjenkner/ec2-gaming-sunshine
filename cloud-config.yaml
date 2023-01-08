@@ -1,0 +1,53 @@
+#cloud-config
+
+package_update: true
+packages:
+- linux-aws
+- linux-headers-aws
+- awscli
+- gcc
+- make
+- unzip
+- libc6-dev
+- pkg-config
+- xserver-xorg-core
+- xserver-xorg-dev
+- gnome-session
+- gnome-terminal
+- libva2
+- libvdpau1
+- libva-drm2
+- libglvnd-dev
+- httpie
+
+apt:
+  steam.list:
+    source: |
+      deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
+      deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
+    keyid: F24AEA9FB05498B7
+
+write_files:
+- path: /etc/modprobe.d/blacklist.conf
+  content: |
+    blacklist vga16fb
+    blacklist nouveau
+    blacklist rivafb
+    blacklist nvidiafb
+    blacklist rivatv
+- path: /etc/modprobe.d/nvidia.conf
+  content: |
+    options nvidia NVreg_EnableGpuFirmware=0
+- path: /etc/gdm3/custom.conf
+  content: |
+    [daemon]
+    WaylandEnable=false
+    AutomaticLoginEnable = true
+    AutomaticLogin = ubuntu
+    [security]
+    [xdmcp]
+    [chooser]
+    [debug]
+- path: /etc/udev/rules.d/85-sunshine-input.rules
+  content: |
+    KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"

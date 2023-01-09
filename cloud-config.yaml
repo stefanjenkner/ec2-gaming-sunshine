@@ -1,5 +1,8 @@
 #cloud-config
 
+mounts:
+- ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail,x-systemd.makefs,x-systemd.requires=cloud-init.service", "0", "2"]
+
 package_update: true
 packages:
 - linux-aws
@@ -14,6 +17,7 @@ packages:
 - xserver-xorg-dev
 - gnome-session
 - gnome-terminal
+- nautilus
 - libva2
 - libvdpau1
 - libva-drm2
@@ -21,11 +25,13 @@ packages:
 - httpie
 
 apt:
-  steam.list:
-    source: |
-      deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-      deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-    keyid: F24AEA9FB05498B7
+  preserve_sources_list: false
+  sources:
+    steam.list:
+      source: |
+        deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
+        deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
+      keyid: F24AEA9FB05498B7
 
 write_files:
 - path: /etc/modprobe.d/blacklist.conf
@@ -51,3 +57,16 @@ write_files:
 - path: /etc/udev/rules.d/85-sunshine-input.rules
   content: |
     KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"
+- path: /opt/install_nvidia_driver.sh
+  content: |
+    #!/bin/bash
+    cd /tmp
+    aws s3 cp --recursive s3://nvidia-gaming/linux/latest/ .
+    unzip *Cloud_Gaming-Linux-Guest-Drivers.zip -d nvidia-drivers
+    chmod +x ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
+    sudo /bin/sh ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
+    cat << EOF | sudo tee -a /etc/nvidia/gridd.conf
+    vGamingMarketplace=2
+    EOF
+    sudo curl -o /etc/nvidia/GridSwCert.txt "https://nvidia-gaming.s3.amazonaws.com/GridSwCert-Archive/GridSwCertLinux_2021_10_2.cert"
+  permissions: '0755'

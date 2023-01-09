@@ -6,8 +6,7 @@ Powered by Ubuntu 22.04 on EC2 g4dn.xlarge Spot instances using NVIDIA gaming dr
 
 Current features:
 
- * EC2 launch template
- * cloud-init config to setup EC2 instance
+ * EC2 launch template with cloud-init config
 
 ## Howto
 
@@ -15,13 +14,15 @@ Create stack
 
     aws cloudformation create-stack \
         --stack-name jammy-sunshine \
-        --template-body file://cloudformation/jammy-sunshine.yaml
+        --template-body file://cloudformation/jammy-sunshine.yaml \
+        --parameters ParameterKey=CloudConfig,ParameterValue=$(base64 cloud-config.yaml)
 
 Update stack
 
     aws cloudformation update-stack \
         --stack-name jammy-sunshine \
-        --template-body file://cloudformation/jammy-sunshine.yaml
+        --template-body file://cloudformation/jammy-sunshine.yaml \
+        --parameters ParameterKey=CloudConfig,ParameterValue=$(base64 cloud-config.yaml)
 
 ## Manual steps
 
@@ -34,21 +35,19 @@ Update grub:
     sudo update-initramfs -u
     sudo update-grub
 
-    reboot
+Add default user to group input:
 
-Install NVIDIA gaming driver:
+    sudo usermod -a -G input $USER
 
-    cd /tmp
-    aws s3 cp --recursive s3://nvidia-gaming/linux/latest/ .
-    unzip *Cloud_Gaming-Linux-Guest-Drivers.zip -d nvidia-drivers
-    chmod +x ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
-    sudo /bin/sh ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
+Install Steam:
 
-    cat << EOF | sudo tee -a /etc/nvidia/gridd.conf
-    vGamingMarketplace=2
-    EOF
+    sudo dpkg --add-architecture i386
+    sudo apt-get update
+    sudo apt-get install -y --no-install-recommends steam-launcher steam-libs-amd64 steam-libs-i386:i386
 
-    sudo curl -o /etc/nvidia/GridSwCert.txt "https://nvidia-gaming.s3.amazonaws.com/GridSwCert-Archive/GridSwCertLinux_2021_10_2.cert"
+Install NVIDIA gaming driver and reboot:
+
+    /opt/install_nvidia_driver.sh
 
     sudo reboot
 
@@ -56,24 +55,24 @@ Install NVIDIA gaming driver:
 
     sudo nvidia-xconfig --preserve-busid --enable-all-gpus
 
+    reboot
+
 Install sunshine:
 
     wget https://github.com/LizardByte/Sunshine/releases/download/v0.16.0/sunshine-22.04.deb
     sudo apt-get install -y ./sunshine-22.04.deb
 
-    sudo usermod -a -G input $USER
-
     systemctl --user enable sunshine
     systemctl --user start sunshine
 
+Configure username and password for sunshine:
 
-Install Steam:
+    https --verify=no :47990/api/password newUsername="sunshine" newPassword="sunshine" confirmNewPassword="sunshine"
 
-    cat << EOF | sudo tee --append /etc/apt/sources.list.d/steam.list
-    deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-    deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-    EOF
+Determine public IPv4 address:
 
-    sudo dpkg --add-architecture i386
-    sudo apt-get update
-    sudo apt-get install -y --no-install-recommends steam-launcher steam-libs-amd64 steam-libs-i386:i386
+    cloud-init query ds.meta_data.public_ipv4
+
+Allow connection by entering the PIN:
+
+    https --verify=no -a sunshine:sunshine :47990/api/pin pin="0000"

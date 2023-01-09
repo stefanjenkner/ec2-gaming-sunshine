@@ -1,7 +1,16 @@
 #cloud-config
 
-mounts:
-- ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail,x-systemd.makefs,x-systemd.requires=cloud-init.service", "0", "2"]
+bootcmd:
+  - dpkg --add-architecture i386
+
+apt:
+  preserve_sources_list: false
+  sources:
+    steam.list:
+      source: |
+        deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
+        deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
+      keyid: F24AEA9FB05498B7
 
 package_update: true
 packages:
@@ -23,15 +32,13 @@ packages:
 - libva-drm2
 - libglvnd-dev
 - httpie
+- gdebi-core
+- steam-launcher
+- steam-libs-amd64
+- steam-libs-i386:i386
 
-apt:
-  preserve_sources_list: false
-  sources:
-    steam.list:
-      source: |
-        deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-        deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-      keyid: F24AEA9FB05498B7
+mounts:
+- ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail,x-systemd.makefs,x-systemd.requires=cloud-init.service", "0", "2"]
 
 write_files:
 - path: /etc/modprobe.d/blacklist.conf

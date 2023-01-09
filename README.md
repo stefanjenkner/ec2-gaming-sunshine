@@ -39,12 +39,6 @@ Add default user to group input:
 
     sudo usermod -a -G input $USER
 
-Install Steam:
-
-    sudo dpkg --add-architecture i386
-    sudo apt-get update
-    sudo apt-get install -y --no-install-recommends steam-launcher steam-libs-amd64 steam-libs-i386:i386
-
 Install NVIDIA gaming driver and reboot:
 
     /opt/install_nvidia_driver.sh
@@ -61,7 +55,6 @@ Install sunshine:
 
     wget https://github.com/LizardByte/Sunshine/releases/download/v0.16.0/sunshine-22.04.deb
     sudo apt-get install -y ./sunshine-22.04.deb
-
     systemctl --user enable sunshine
     systemctl --user start sunshine
 

@@ -14,31 +14,37 @@ apt:
 
 package_update: true
 packages:
-- linux-aws
-- linux-headers-aws
 - awscli
-- gcc
-- make
-- unzip
-- libc6-dev
-- pkg-config
-- xserver-xorg-core
-- xserver-xorg-dev
+- build-essential
+- dkms
 - gnome-session
 - gnome-terminal
-- nautilus
+- httpie
+- libc6-dev
+- libglvnd-dev
+- libva-drm2
 - libva2
 - libvdpau1
-- libva-drm2
-- libglvnd-dev
-- httpie
-- gdebi-core
+- linux-aws
+- linux-headers-aws
+- nautilus
+- pkg-config
+- unzip
+- xserver-xorg-core
+- xserver-xorg-dev
 - steam-launcher
 - steam-libs-amd64
 - steam-libs-i386:i386
 
 mounts:
-- ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail,x-systemd.makefs,x-systemd.requires=cloud-init.service", "0", "2"]
+- ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail,x-systemd.requires=cloud-init.service,x-systemd.makefs", "0", "2"]
+
+users:
+- default
+- name: sunshine
+  gecos: Sunshine
+  groups: users, audio, video, plugdev, netdev, input
+  shell: /bin/bash
 
 write_files:
 - path: /etc/modprobe.d/blacklist.conf
@@ -56,7 +62,7 @@ write_files:
     [daemon]
     WaylandEnable=false
     AutomaticLoginEnable = true
-    AutomaticLogin = ubuntu
+    AutomaticLogin = sunshine
     [security]
     [xdmcp]
     [chooser]
@@ -67,13 +73,21 @@ write_files:
 - path: /opt/install_nvidia_driver.sh
   content: |
     #!/bin/bash
-    cd /tmp
+    cd /mnt
     aws s3 cp --recursive s3://nvidia-gaming/linux/latest/ .
     unzip *Cloud_Gaming-Linux-Guest-Drivers.zip -d nvidia-drivers
+    rm -f *Cloud_Gaming-Linux-Guest-Drivers.zip
     chmod +x ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
-    sudo /bin/sh ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
-    cat << EOF | sudo tee -a /etc/nvidia/gridd.conf
+    /bin/sh ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run --dkms --tmpdir=/mnt -q
+    rm -rf ./nvidia-drivers/
+    dkms autoinstall
+    cat << EOF | tee -a /etc/nvidia/gridd.conf
     vGamingMarketplace=2
     EOF
-    sudo curl -o /etc/nvidia/GridSwCert.txt "https://nvidia-gaming.s3.amazonaws.com/GridSwCert-Archive/GridSwCertLinux_2021_10_2.cert"
+    curl -o /etc/nvidia/GridSwCert.txt "https://nvidia-gaming.s3.amazonaws.com/GridSwCert-Archive/GridSwCertLinux_2021_10_2.cert"
   permissions: '0755'
+
+runcmd:
+  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.16.0/sunshine-22.04.deb
+  - apt-get install -y ./sunshine-22.04.deb
+  - su -c "systemctl --user enable sunshine" sunshine

@@ -14,6 +14,7 @@ Create stack
 
     aws cloudformation create-stack \
         --stack-name jammy-sunshine \
+        --capabilities CAPABILITY_NAMED_IAM \
         --template-body file://cloudformation/jammy-sunshine.yaml \
         --parameters ParameterKey=CloudConfig,ParameterValue=$(base64 cloud-config.yaml)
 
@@ -21,6 +22,7 @@ Update stack
 
     aws cloudformation update-stack \
         --stack-name jammy-sunshine \
+        --capabilities CAPABILITY_NAMED_IAM \
         --template-body file://cloudformation/jammy-sunshine.yaml \
         --parameters ParameterKey=CloudConfig,ParameterValue=$(base64 cloud-config.yaml)
 
@@ -35,15 +37,9 @@ Update grub:
     sudo update-initramfs -u
     sudo update-grub
 
-Add default user to group input:
-
-    sudo usermod -a -G input $USER
-
 Install NVIDIA gaming driver and reboot:
 
-    /opt/install_nvidia_driver.sh
-
-    sudo reboot
+    sudo /opt/install_nvidia_driver.sh
 
     nvidia-smi -q | head
 
@@ -51,14 +47,7 @@ Install NVIDIA gaming driver and reboot:
 
     reboot
 
-Install sunshine:
-
-    wget https://github.com/LizardByte/Sunshine/releases/download/v0.16.0/sunshine-22.04.deb
-    sudo apt-get install -y ./sunshine-22.04.deb
-    systemctl --user enable sunshine
-    systemctl --user start sunshine
-
-Configure username and password for sunshine:
+Setup sunshine and configure username and password for sunshine:
 
     https --verify=no :47990/api/password newUsername="sunshine" newPassword="sunshine" confirmNewPassword="sunshine"
 

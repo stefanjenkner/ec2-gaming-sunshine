@@ -6,13 +6,29 @@ Parameters:
     Type: String
 
 Resources:
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-instance-role'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       InstanceProfileName: !Sub '${AWS::StackName}-instance-profile'
       Path: "/"
       Roles:
-      - ec2-gaming
+      - !Ref InstanceRole
   LaunchTemplate:
     Type: 'AWS::EC2::LaunchTemplate'
     Properties:
@@ -30,9 +46,11 @@ Resources:
             Groups:
               - sg-0b9b66ec89b9a0a15 # ec2-gaming
               - sg-013098d8f62f879c9 # sunsine
+        PrivateDnsNameOptions:
+          HostnameType: resource-name
         BlockDeviceMappings:
           - Ebs:
-              VolumeSize: 8
+              VolumeSize: 10
               VolumeType: gp2
               DeleteOnTermination: true
               Encrypted: true
@@ -44,7 +62,6 @@ Resources:
           MarketType: spot
           SpotOptions:
             InstanceInterruptionBehavior: stop
-            # MaxPrice - pay the current Spot price
             SpotInstanceType: persistent
         TagSpecifications:
           - ResourceType: instance

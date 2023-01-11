@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Parameters:
+  MyIp:
+    Description: Client IP address in CIDR notation
+    Type: String
+    Default: 84.160.201.227/31
   CloudConfig:
     Description: Base64-encoded cloud-config to be passed as UserData
     Type: String
@@ -29,6 +33,30 @@ Resources:
       Path: "/"
       Roles:
       - !Ref InstanceRole
+  AdminAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${AWS::StackName}-admin-access'
+      GroupDescription: Allow remote admin access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIp
+  GamingAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${AWS::StackName}-player-access'
+      GroupDescription: Allow remote gaming access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 47984
+          ToPort: 48031
+          CidrIp: !Ref MyIp
+        - IpProtocol: udp
+          FromPort: 47998
+          ToPort: 48015
+          CidrIp: !Ref MyIp
   LaunchTemplate:
     Type: 'AWS::EC2::LaunchTemplate'
     Properties:
@@ -44,8 +72,8 @@ Resources:
             DeleteOnTermination: true
             SubnetId: subnet-b859bfc3
             Groups:
-              - sg-0b9b66ec89b9a0a15 # ec2-gaming
-              - sg-013098d8f62f879c9 # sunsine
+              - !Ref AdminAccessSecurityGroup
+              - !Ref GamingAccessSecurityGroup
         PrivateDnsNameOptions:
           HostnameType: resource-name
         BlockDeviceMappings:

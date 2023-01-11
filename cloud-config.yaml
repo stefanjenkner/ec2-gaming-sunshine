@@ -36,6 +36,12 @@ packages:
 - steam-libs-amd64
 - steam-libs-i386:i386
 
+# required for first boot only
+fs_setup:
+- label: instance_storage
+  device: /dev/nvme1n1
+  filesystem: ext4
+
 mounts:
 - ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail,x-systemd.requires=cloud-init.service,x-systemd.makefs", "0", "2"]
 
@@ -80,7 +86,9 @@ write_files:
     chmod +x ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
     /bin/sh ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run --dkms --tmpdir=/mnt -q
     rm -rf ./nvidia-drivers/
-    dkms autoinstall
+    kversion=$(readlink /boot/initrd.img |sed 's/initrd.img-//g')
+    dkms autoinstall -k $kversion
+    update-initramfs -k $kversion -u
     cat << EOF | tee -a /etc/nvidia/gridd.conf
     vGamingMarketplace=2
     EOF
@@ -88,6 +96,8 @@ write_files:
   permissions: '0755'
 
 runcmd:
+  - update-initramfs -u
+  - update-grub
   - wget https://github.com/LizardByte/Sunshine/releases/download/v0.16.0/sunshine-22.04.deb
   - apt-get install -y ./sunshine-22.04.deb
   - su -c "systemctl --user enable sunshine" sunshine

@@ -26,16 +26,15 @@ Update stack
         --template-body file://cloudformation/jammy-sunshine.yaml \
         --parameters ParameterKey=CloudConfig,ParameterValue=$(base64 cloud-config.yaml)
 
+Launch instance
+
+    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-launch-template,Version=\$Latest
+
 ## Manual steps
 
 Wait for cloud-init to finish:
 
     tail -f /var/log/cloud-init.log
-
-Update grub:
-
-    sudo update-initramfs -u
-    sudo update-grub
 
 Install NVIDIA gaming driver and reboot:
 
@@ -45,7 +44,7 @@ Install NVIDIA gaming driver and reboot:
 
     sudo nvidia-xconfig --preserve-busid --enable-all-gpus
 
-    reboot
+    sudo reboot
 
 Setup sunshine and configure username and password for sunshine:
 

@@ -72,8 +72,8 @@ Resources:
             DeleteOnTermination: true
             SubnetId: subnet-b859bfc3
             Groups:
-              - !Ref AdminAccessSecurityGroup
-              - !Ref GamingAccessSecurityGroup
+              - !GetAtt AdminAccessSecurityGroup.GroupId
+              - !GetAtt GamingAccessSecurityGroup.GroupId
         PrivateDnsNameOptions:
           HostnameType: resource-name
         BlockDeviceMappings:

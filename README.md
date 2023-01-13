@@ -20,11 +20,7 @@ Create stack
 
 Update stack
 
-    aws cloudformation update-stack \
-        --stack-name jammy-sunshine \
-        --capabilities CAPABILITY_NAMED_IAM \
-        --template-body file://cloudformation/jammy-sunshine.yaml \
-        --parameters ParameterKey=CloudConfig,ParameterValue=$(base64 cloud-config.yaml)
+    ./deploy.py
 
 Launch instance
 

@@ -4,10 +4,6 @@ Parameters:
   MyIp:
     Description: Client IP address in CIDR notation
     Type: String
-    Default: 84.160.201.227/31
-  CloudConfig:
-    Description: Base64-encoded cloud-config to be passed as UserData
-    Type: String
 
 Resources:
   InstanceRole:
@@ -96,7 +92,8 @@ Resources:
             Tags:
               -  Key: Name
                  Value: !Sub '${AWS::StackName}-instance'
-        UserData: !Ref CloudConfig
+        UserData: |
+          {{ cloud_config }}
 
 Outputs:
   LaunchTemplateId:

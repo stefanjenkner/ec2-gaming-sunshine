@@ -22,6 +22,17 @@ Resources:
       Path: /
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+      Policies:
+      - PolicyName: !Sub '${AWS::StackName}-library-access'
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: 's3:ListBucket'
+              Resource: !GetAtt LibraryBucket.Arn
+            - Effect: Allow
+              Action: 's3:*Object'
+              Resource: !Join ['/', [!GetAtt LibraryBucket.Arn, '*']]
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -74,7 +85,7 @@ Resources:
           HostnameType: resource-name
         BlockDeviceMappings:
           - Ebs:
-              VolumeSize: 10
+              VolumeSize: 15
               VolumeType: gp2
               DeleteOnTermination: true
               Encrypted: true
@@ -94,6 +105,10 @@ Resources:
                  Value: !Sub '${AWS::StackName}-instance'
         UserData: |
           {{ cloud_config }}
+  LibraryBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-library'
 
 Outputs:
   LaunchTemplateId:

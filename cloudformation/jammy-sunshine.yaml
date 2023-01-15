@@ -109,7 +109,22 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub '${AWS::StackName}-library'
-
+  ControllerUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub '${AWS::StackName}-controller'
+      Path: /
+      Policies:
+      - PolicyName: !Sub '${AWS::StackName}-start-stop-instances'
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: 'ec2:DescribeInstances'
+              Resource: '*'
+            - Effect: Allow
+              Action: ['ec2:StartInstances', 'ec2:StopInstances']
+              Resource: 'arn:aws:ec2:*:*:instance/*'
 Outputs:
   LaunchTemplateId:
     Value: !Ref LaunchTemplate

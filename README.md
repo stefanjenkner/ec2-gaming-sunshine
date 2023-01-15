@@ -15,8 +15,7 @@ Create stack
     aws cloudformation create-stack \
         --stack-name jammy-sunshine \
         --capabilities CAPABILITY_NAMED_IAM \
-        --template-body file://cloudformation/jammy-sunshine.yaml \
-        --parameters ParameterKey=CloudConfig,ParameterValue=$(base64 cloud-config.yaml)
+        --template-body file://cloudformation/jammy-sunshine.yaml
 
 Update stack
 
@@ -35,10 +34,6 @@ Wait for cloud-init to finish:
 Install NVIDIA gaming driver and reboot:
 
     sudo /opt/install_nvidia_driver.sh
-
-    nvidia-smi -q | head
-
-    sudo nvidia-xconfig --preserve-busid --enable-all-gpus
 
     sudo reboot
 

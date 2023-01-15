@@ -18,6 +18,7 @@ packages:
 - build-essential
 - dkms
 - gnome-session
+- gnome-shell-extension-appindicator
 - gnome-terminal
 - httpie
 - libc6-dev
@@ -29,12 +30,13 @@ packages:
 - linux-headers-aws
 - nautilus
 - pkg-config
-- unzip
-- xserver-xorg-core
-- xserver-xorg-dev
+- restic
 - steam-launcher
 - steam-libs-amd64
 - steam-libs-i386:i386
+- unzip
+- xserver-xorg-core
+- xserver-xorg-dev
 
 # required for first boot only
 fs_setup:
@@ -93,9 +95,25 @@ write_files:
     vGamingMarketplace=2
     EOF
     curl -o /etc/nvidia/GridSwCert.txt "https://nvidia-gaming.s3.amazonaws.com/GridSwCert-Archive/GridSwCertLinux_2021_10_2.cert"
+    nvidia-smi -q | head
+    nvidia-xconfig --preserve-busid --enable-all-gpus
   permissions: '0755'
+- path: /etc/systemd/system/mnt.service
+  content: |
+    [Unit]
+    After = network-online.target
+    Wants = network-online.target
+    [Service]
+    Type = oneshot
+    RemainAfterExit = yes
+    ExecStart = mkdir -p /mnt/sunshine
+    ExecStart = chown sunshine:users /mnt/sunshine
+    [Install]
+    WantedBy = multi-user.target
+  permissions: '0644'
 
 runcmd:
+  - systemctl enable mnt
   - wget https://github.com/LizardByte/Sunshine/releases/download/v0.16.0/sunshine-22.04.deb
   - apt-get install -y ./sunshine-22.04.deb
   - su -c "systemctl --user enable sunshine" sunshine

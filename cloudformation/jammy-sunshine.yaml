@@ -4,6 +4,9 @@ Parameters:
   MyIp:
     Description: Client IP address in CIDR notation
     Type: String
+  KeyPair:
+      Description: EC2 Key Pair
+      Type: "AWS::EC2::KeyPair::KeyName"
 
 Resources:
   InstanceRole:
@@ -64,15 +67,13 @@ Resources:
           FromPort: 47998
           ToPort: 48015
           CidrIp: !Ref MyIp
-  LaunchTemplate:
+  LaunchTemplateSpot:
     Type: 'AWS::EC2::LaunchTemplate'
     Properties:
-      LaunchTemplateName: !Sub '${AWS::StackName}-launch-template'
+      LaunchTemplateName: !Sub '${AWS::StackName}-spot'
       LaunchTemplateData:
         IamInstanceProfile:
-          Arn: !GetAtt
-            - InstanceProfile
-            - Arn
+          Arn: !GetAtt InstanceProfile.Arn
         NetworkInterfaces:
           - DeviceIndex: 0
             AssociatePublicIpAddress: true
@@ -92,7 +93,7 @@ Resources:
             DeviceName: /dev/sda1
         ImageId: ami-06ce824c157700cd2
         InstanceType: g4dn.xlarge
-        KeyName: ec2-gaming
+        KeyName: !Ref KeyPair
         InstanceMarketOptions:
           MarketType: spot
           SpotOptions:
@@ -127,6 +128,6 @@ Resources:
               Resource: 'arn:aws:ec2:*:*:instance/*'
 Outputs:
   LaunchTemplateId:
-    Value: !Ref LaunchTemplate
+    Value: !Ref LaunchTemplateSpot
   LaunchTemplateLatestVersionNumber:
-    Value: !GetAtt LaunchTemplate.LatestVersionNumber
+    Value: !GetAtt LaunchTemplateSpot.LatestVersionNumber

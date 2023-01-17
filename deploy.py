@@ -1,28 +1,74 @@
 #!/usr/bin/env python
 
 import base64
+import logging
 
+import botocore
 import boto3
+
 from jinja2 import Template
+
+STACK_NAME = "jammy-sunshine"
 
 
 def main():
 
+    logging.basicConfig(level=logging.INFO)
+
     with open("cloudformation/jammy-sunshine.yaml") as cf_:
         template = Template(cf_.read())
 
-    with open("cloud-config.yaml", "rb") as cloud_config_:
+    with open("cloud-init/cloud-config.yaml", "rb") as cloud_config_:
         cloud_config_b64_ = base64.b64encode(cloud_config_.read())
         cloud_config_b64_text_ = cloud_config_b64_.decode("ascii")
 
     client = boto3.client("cloudformation")
-    response = client.update_stack(
-        StackName="jammy-sunshine",
-        TemplateBody=template.render(cloud_config=cloud_config_b64_text_),
-        Parameters=[{"ParameterKey": "MyIp", "UsePreviousValue": True}],
-        Capabilities=["CAPABILITY_NAMED_IAM"],
-    )
-    print(response)
+
+    stack_exists = False
+    try:
+        response = client.describe_stacks(StackName=STACK_NAME)
+        stack_exists = True
+        stack_status = response["Stacks"][0]["StackStatus"]
+        logging.info(f"Found stack {STACK_NAME} with status {stack_status}")
+    except botocore.exceptions.ClientError as error:
+        if error.response["Error"]["Code"] == "ValidationError":
+            logging.info(f"Stack {STACK_NAME} does not exist yet")
+        else:
+            raise error
+
+    if stack_exists:
+
+        logging.info(f"Updating stack {STACK_NAME}")
+
+        try:
+            response = client.update_stack(
+                StackName=STACK_NAME,
+                TemplateBody=template.render(cloud_config=cloud_config_b64_text_),
+                Parameters=[
+                    {"ParameterKey": "MyIp", "UsePreviousValue": True},
+                    {"ParameterKey": "KeyPair", "UsePreviousValue": True},
+                ],
+                Capabilities=["CAPABILITY_NAMED_IAM"],
+            )
+
+        except botocore.exceptions.ClientError as error:
+            if error.response["Error"]["Code"] == "ValidationError":
+                logging.error(error.response["Error"]["Message"])
+            else:
+                raise error
+
+    else:
+
+        logging.info(f"Creating stack {STACK_NAME}")
+        response = client.create_stack(
+            StackName=STACK_NAME,
+            TemplateBody=template.render(cloud_config=cloud_config_b64_text_),
+            Parameters=[
+                {"ParameterKey": "MyIp", "ParameterValue": "127.0.0.1"},
+                {"ParameterKey": "KeyPair", "ParameterValue": "ec2-gaming"},
+            ],
+            Capabilities=["CAPABILITY_NAMED_IAM"],
+        )
 
 
 if __name__ == "__main__":

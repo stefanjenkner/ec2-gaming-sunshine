@@ -10,20 +10,13 @@ Current features:
 
 ## Howto
 
-Create stack
-
-    aws cloudformation create-stack \
-        --stack-name jammy-sunshine \
-        --capabilities CAPABILITY_NAMED_IAM \
-        --template-body file://cloudformation/jammy-sunshine.yaml
-
-Update stack
+Create or update stack:
 
     ./deploy.py
 
-Launch instance
+Launch spot instance:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-launch-template,Version=\$Latest
+    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-spot,Version=\$Latest
 
 ## Manual steps
 

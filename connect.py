@@ -31,7 +31,7 @@ def main():
     print(f"Connecting to IP {public_ip}")
 
     if is_ready(public_ip):
-        subprocess.run([MOONLIGHT_QT, "stream", public_ip, "Desktop"])
+        subprocess.run([MOONLIGHT_QT, "stream", public_ip, "Low Res Desktop"])
     else:
         # subprocess.run([MOONLIGHT_QT, "pair", public_ip])
         print(f"Cannot connect to IP {public_ip}")
@@ -49,7 +49,7 @@ def is_ready(public_ip):
     print(output)
     retval = process.wait()
     print(retval)
-    return retval == 0 and b"Desktop\n" in output
+    return retval == 0 and b"Low Res Desktop\n" in output
 
 
 if __name__ == "__main__":

@@ -119,6 +119,6 @@ write_files:
 
 runcmd:
   - systemctl enable init_mnt
-  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.16.0/sunshine-22.04.deb
+  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.17.0/sunshine-22.04.deb
   - apt-get install -y ./sunshine-22.04.deb
   - su -c "systemctl --user enable sunshine" sunshine

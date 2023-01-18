@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
 import subprocess
+from sys import platform
+
 import boto3
 
-MOONLIGHT_QT = "/Applications/Moonlight.app/Contents/MacOS/Moonlight"
+if platform == "linux" or platform == "linux2":
+    MOONLIGHT_QT = "moonlight-qt"
+elif platform == "darwin":
+    MOONLIGHT_QT = "/Applications/Moonlight.app/Contents/MacOS/Moonlight"
 
 
 def main():
@@ -30,11 +35,10 @@ def main():
     public_ip = instances[0]["PublicIpAddress"]
     print(f"Connecting to IP {public_ip}")
 
-    if is_ready(public_ip):
-        subprocess.run([MOONLIGHT_QT, "stream", public_ip, "Low Res Desktop"])
-    else:
-        # subprocess.run([MOONLIGHT_QT, "pair", public_ip])
-        print(f"Cannot connect to IP {public_ip}")
+    if not is_ready(public_ip):
+        subprocess.run([MOONLIGHT_QT, "pair", "--pin", "0000", public_ip])
+
+    subprocess.run([MOONLIGHT_QT, "stream", public_ip, "Low Res Desktop"])
 
 
 def is_ready(public_ip):

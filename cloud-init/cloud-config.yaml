@@ -11,17 +11,27 @@ apt:
         deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
         deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
       keyid: F24AEA9FB05498B7
+  conf: |
+    APT {
+      Install-Suggests "0";
+      Install-Recommends "0";
+    }
 
 package_update: true
 packages:
+- alsa-utils
 - awscli
+- baobab
 - build-essential
 - dkms
+- gdm3
+- gnome-control-center
 - gnome-session
 - gnome-shell-extension-appindicator
 - gnome-terminal
 - httpie
 - libc6-dev
+- libcanberra-pulse
 - libglvnd-dev
 - libva-drm2
 - libva2
@@ -30,15 +40,20 @@ packages:
 - linux-headers-aws
 - nautilus
 - pkg-config
+- pulseaudio
+- pulseaudio-module-gsettings
 - restic
 - steam-launcher
 - steam-libs-amd64
 - steam-libs-i386:i386
 - unzip
+- xdg-desktop-portal-gtk
+- xdg-utils
 - xserver-xorg-core
 - xserver-xorg-dev
+- xserver-xorg-input-libinput
 
-# required for first boot only
+# required on first boot only
 fs_setup:
 - label: instance_storage
   device: /dev/nvme1n1
@@ -107,18 +122,74 @@ write_files:
     Type = oneshot
     RemainAfterExit = yes
     ExecStart = mkdir -p /mnt/sunshine
-    ExecStart = chown sunshine:users /mnt/sunshine
+    ExecStart = chown sunshine:sunshine /mnt/sunshine
     [Install]
     WantedBy = multi-user.target
+- path: /home/ubuntu/.bash_history
+  content: |
+    sudo reboot
+    sudo /opt/install_nvidia_driver.sh
+    tail  -f /var/log/cloud-init.log
+  owner: ubuntu:ubuntu
+  permissions: '0600'
+  defer: true
+- path: /usr/lib/systemd/user/init_desktop_settings.service
+  content: |
+    [Unit]
+    Description=Init desktop settings
+    [Service]
+    Type = oneshot
+    RemainAfterExit = yes
+    ExecStart=/usr/bin/gnome-extensions enable ubuntu-appindicators@ubuntu.com
+    ExecStart=/usr/bin/gsettings set org.gnome.desktop.background picture-uri "file:///usr/share/backgrounds/Jammy-Jellyfish_WP_4096x2304_Grey.png"
+    ExecStart=/usr/bin/gsettings set org.gnome.desktop.interface enable-hot-corners false
+    [Install]
+    WantedBy=graphical-session.target
   permissions: '0644'
 - path: /etc/profile.d/restic.sh
   content: |
+    #!/bin/sh
     export RESTIC_REPOSITORY=s3:https://s3.eu-central-1.amazonaws.com/jammy-sunshine-library
     export RESTIC_PASSWORD=sunshine
   permissions: '0644'
+- path: /usr/local/bin/backup
+  content: |
+    #!/bin/sh
+    restic snapshots || restic init
+    restic backup /mnt/sunshine
+  permissions: '0755'
+  defer: true
+- path: /usr/local/bin/restore
+  content: |
+    #!/bin/sh
+    restic snapshots && \
+      restic restore latest -v --target / --host $(hostname -s)
+    read -p "press any key"
+  permissions: '0755'
+  defer: true
+- path: /usr/local/share/applications/restore.desktop
+  content: |
+    [Desktop Entry]
+    Type=Application
+    Name=Restore
+    Exec=/usr/local/bin/restore
+    Terminal=true
+  permissions: '0644'
+  defer: true
+- path: /usr/local/share/applications/backup.desktop
+  content: |
+    [Desktop Entry]
+    Type=Application
+    Name=Backup
+    Exec=/usr/local/bin/backup
+    Terminal=true
+  permissions: '0644'
+  defer: true
 
 runcmd:
   - systemctl enable init_mnt
   - wget https://github.com/LizardByte/Sunshine/releases/download/v0.17.0/sunshine-22.04.deb
   - apt-get install -y ./sunshine-22.04.deb
   - su -c "systemctl --user enable sunshine" sunshine
+  - su -c "systemctl --user enable init_desktop_settings" sunshine
+  - su -c "desktop-file-install --dir=/home/sunshine/.config/autostart /usr/local/share/applications/restore.desktop" sunshine

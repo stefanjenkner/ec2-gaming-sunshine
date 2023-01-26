@@ -14,3 +14,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Generate template
         run: python deploy.py --print-only > jammy-sunshine.template
+      - name: Upload template
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: jammy-sunshine.template

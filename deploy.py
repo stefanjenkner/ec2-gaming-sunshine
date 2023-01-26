@@ -2,6 +2,7 @@
 
 import base64
 import logging
+import argparse
 
 import botocore
 import boto3
@@ -13,7 +14,10 @@ STACK_NAME = "jammy-sunshine"
 
 def main():
 
-    logging.basicConfig(level=logging.INFO)
+    parser = argparse.ArgumentParser(prog="deploy", epilog="Create or update stack")
+    parser.add_argument("--print-only", action="store_true")
+
+    args = parser.parse_args()
 
     with open("cloudformation/jammy-sunshine.yaml") as cf_:
         template = Template(cf_.read())
@@ -21,6 +25,12 @@ def main():
     with open("cloud-init/cloud-config.yaml", "rb") as cloud_config_:
         cloud_config_b64_ = base64.b64encode(cloud_config_.read())
         cloud_config_b64_text_ = cloud_config_b64_.decode("ascii")
+
+    if args.print_only:
+        print(template.render(cloud_config=cloud_config_b64_text_))
+        return
+
+    logging.basicConfig(level=logging.INFO)
 
     client = boto3.client("cloudformation")
 

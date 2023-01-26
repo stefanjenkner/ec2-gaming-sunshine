@@ -12,6 +12,10 @@ Current features:
 
 ## Howto
 
+Show template:
+
+    ./deploy.py --print-only
+
 Create or update stack:
 
     ./deploy.py

@@ -8,77 +8,77 @@ Parameters:
     Description: EC2 Key Pair
     Type: "AWS::EC2::KeyPair::KeyName"
   LatestAmiId:
-    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default: '/aws/service/canonical/ubuntu/server/jammy/stable/current/amd64/hvm/ebs-gp2/ami-id'
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: "/aws/service/canonical/ubuntu/server/jammy/stable/current/amd64/hvm/ebs-gp2/ami-id"
 
 Resources:
   InstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub '${AWS::StackName}-instance-role'
+      RoleName: !Sub "${AWS::StackName}-instance-role"
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - ec2.amazonaws.com
-          Action:
-          - sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
       Path: /
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
       Policies:
-      - PolicyName: !Sub '${AWS::StackName}-library-access'
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-          - Effect: Allow
-            Action: 's3:ListBucket'
-            Resource: !GetAtt LibraryBucket.Arn
-          - Effect: Allow
-            Action: 's3:*Object'
-            Resource: !Join ['/', [!GetAtt LibraryBucket.Arn, '*']]
+        - PolicyName: !Sub "${AWS::StackName}-library-access"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "s3:ListBucket"
+                Resource: !GetAtt LibraryBucket.Arn
+              - Effect: Allow
+                Action: "s3:*Object"
+                Resource: !Join ["/", [!GetAtt LibraryBucket.Arn, "*"]]
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: !Sub '${AWS::StackName}-instance-profile'
+      InstanceProfileName: !Sub "${AWS::StackName}-instance-profile"
       Path: "/"
       Roles:
-      - !Ref InstanceRole
+        - !Ref InstanceRole
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
       Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}'
+        - Key: Name
+          Value: !Sub "${AWS::StackName}"
   Subnet1:
-    Type: 'AWS::EC2::Subnet'
+    Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: !Sub '${AWS::Region}a'
+      AvailabilityZone: !Sub "${AWS::Region}a"
       CidrBlock: 10.0.2.0/24
       MapPublicIpOnLaunch: true
       Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-${AWS::Region}a'
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${AWS::Region}a"
   Subnet2:
-    Type: 'AWS::EC2::Subnet'
+    Type: "AWS::EC2::Subnet"
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: !Sub '${AWS::Region}b'
+      AvailabilityZone: !Sub "${AWS::Region}b"
       CidrBlock: 10.0.3.0/24
       MapPublicIpOnLaunch: true
       Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-${AWS::Region}b'
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-${AWS::Region}b"
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-igw'
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-igw"
   VpcInternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -108,77 +108,77 @@ Resources:
   AdminAccess:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub '${AWS::StackName}-admin'
+      GroupName: !Sub "${AWS::StackName}-admin"
       GroupDescription: Allow remote admin access
       VpcId: !Ref Vpc
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 22
-        ToPort: 22
-        CidrIp: !Ref MyIp
-      - IpProtocol: tcp
-        FromPort: 47990
-        ToPort: 47990
-        CidrIp: !Ref MyIp
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIp
+        - IpProtocol: tcp
+          FromPort: 47990
+          ToPort: 47990
+          CidrIp: !Ref MyIp
   GamingAccess:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub '${AWS::StackName}-player'
+      GroupName: !Sub "${AWS::StackName}-player"
       GroupDescription: Allow remote gaming access
       VpcId: !Ref Vpc
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 47984
-        ToPort: 47989
-        CidrIp: !Ref MyIp
-      - IpProtocol: tcp
-        FromPort: 48010
-        ToPort: 48031
-        CidrIp: !Ref MyIp
-      - IpProtocol: udp
-        FromPort: 47998
-        ToPort: 48015
-        CidrIp: !Ref MyIp
+        - IpProtocol: tcp
+          FromPort: 47984
+          ToPort: 47989
+          CidrIp: !Ref MyIp
+        - IpProtocol: tcp
+          FromPort: 48010
+          ToPort: 48031
+          CidrIp: !Ref MyIp
+        - IpProtocol: udp
+          FromPort: 47998
+          ToPort: 48015
+          CidrIp: !Ref MyIp
   RemotePlayAccess:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub '${AWS::StackName}-remote-play'
+      GroupName: !Sub "${AWS::StackName}-remote-play"
       GroupDescription: Allow Steam Remote Play
       VpcId: !Ref Vpc
       SecurityGroupIngress:
-      - IpProtocol: udp
-        FromPort: 27031
-        ToPort: 27036
-        CidrIp: 0.0.0.0/0
-      - IpProtocol: tcp
-        FromPort: 27036
-        ToPort: 27037
-        CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 27031
+          ToPort: 27036
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 27036
+          ToPort: 27037
+          CidrIp: 0.0.0.0/0
   LaunchTemplateSpot:
-    Type: 'AWS::EC2::LaunchTemplate'
+    Type: "AWS::EC2::LaunchTemplate"
     Properties:
-      LaunchTemplateName: !Sub '${AWS::StackName}-spot'
+      LaunchTemplateName: !Sub "${AWS::StackName}-spot"
       LaunchTemplateData:
         IamInstanceProfile:
           Arn: !GetAtt InstanceProfile.Arn
         NetworkInterfaces:
-        - DeviceIndex: 0
-          AssociatePublicIpAddress: true
-          DeleteOnTermination: true
-          SubnetId: !Ref Subnet1
-          Groups:
-          - !GetAtt AdminAccess.GroupId
-          - !GetAtt GamingAccess.GroupId
-          - !GetAtt RemotePlayAccess.GroupId
+          - DeviceIndex: 0
+            AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            SubnetId: !Ref Subnet1
+            Groups:
+              - !GetAtt AdminAccess.GroupId
+              - !GetAtt GamingAccess.GroupId
+              - !GetAtt RemotePlayAccess.GroupId
         PrivateDnsNameOptions:
           HostnameType: resource-name
         BlockDeviceMappings:
-        - Ebs:
-            VolumeSize: 20
-            VolumeType: gp2
-            DeleteOnTermination: true
-            Encrypted: true
-          DeviceName: /dev/sda1
+          - Ebs:
+              VolumeSize: 20
+              VolumeType: gp2
+              DeleteOnTermination: true
+              Encrypted: true
+            DeviceName: /dev/sda1
         ImageId: !Ref LatestAmiId
         InstanceType: g4dn.xlarge
         KeyName: !Ref KeyPair
@@ -188,64 +188,64 @@ Resources:
             InstanceInterruptionBehavior: stop
             SpotInstanceType: persistent
         TagSpecifications:
-        - ResourceType: instance
-          Tags:
-          - Key: Name
-            Value: !Sub '${AWS::StackName}-instance'
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${AWS::StackName}-instance"
         UserData: |
           {{ cloud_config }}
   LaunchTemplateOnDemand:
-    Type: 'AWS::EC2::LaunchTemplate'
+    Type: "AWS::EC2::LaunchTemplate"
     Properties:
-      LaunchTemplateName: !Sub '${AWS::StackName}-on-demand'
+      LaunchTemplateName: !Sub "${AWS::StackName}-on-demand"
       LaunchTemplateData:
         IamInstanceProfile:
           Arn: !GetAtt InstanceProfile.Arn
         NetworkInterfaces:
-        - DeviceIndex: 0
-          AssociatePublicIpAddress: true
-          DeleteOnTermination: true
-          SubnetId: !Ref Subnet1
-          Groups:
-          - !GetAtt AdminAccess.GroupId
-          - !GetAtt GamingAccess.GroupId
-          - !GetAtt RemotePlayAccess.GroupId
+          - DeviceIndex: 0
+            AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            SubnetId: !Ref Subnet1
+            Groups:
+              - !GetAtt AdminAccess.GroupId
+              - !GetAtt GamingAccess.GroupId
+              - !GetAtt RemotePlayAccess.GroupId
         PrivateDnsNameOptions:
           HostnameType: resource-name
         BlockDeviceMappings:
-        - Ebs:
-            VolumeSize: 20
-            VolumeType: gp2
-            DeleteOnTermination: true
-            Encrypted: true
-          DeviceName: /dev/sda1
+          - Ebs:
+              VolumeSize: 20
+              VolumeType: gp2
+              DeleteOnTermination: true
+              Encrypted: true
+            DeviceName: /dev/sda1
         ImageId: !Ref LatestAmiId
         InstanceType: g4dn.xlarge
         KeyName: !Ref KeyPair
         TagSpecifications:
-        - ResourceType: instance
-          Tags:
-          - Key: Name
-            Value: !Sub '${AWS::StackName}-instance'
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${AWS::StackName}-instance"
         UserData: |
           {{ cloud_config }}
   LibraryBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${AWS::StackName}-library'
+      BucketName: !Sub "${AWS::StackName}-library"
   ControllerUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: !Sub '${AWS::StackName}-controller'
+      UserName: !Sub "${AWS::StackName}-controller"
       Path: /
       Policies:
-      - PolicyName: !Sub '${AWS::StackName}-start-stop-instances'
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-          - Effect: Allow
-            Action: 'ec2:DescribeInstances'
-            Resource: '*'
-          - Effect: Allow
-            Action: ['ec2:StartInstances', 'ec2:StopInstances']
-            Resource: 'arn:aws:ec2:*:*:instance/*'
+        - PolicyName: !Sub "${AWS::StackName}-start-stop-instances"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "ec2:DescribeInstances"
+                Resource: "*"
+              - Effect: Allow
+                Action: ["ec2:StartInstances", "ec2:StopInstances"]
+                Resource: "arn:aws:ec2:*:*:instance/*"

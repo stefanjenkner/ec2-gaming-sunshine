@@ -28,6 +28,10 @@ Launch on-demand instance:
 
     aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest
 
+Update IP address in security groups:
+
+    ./update-ip.py
+
 ## Manual steps on first boot
 
 Login to EC2 instance:

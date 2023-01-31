@@ -39,6 +39,7 @@ packages:
 - libva-drm2
 - libva2
 - libvdpau1
+- libvulkan1
 - linux-aws
 - linux-headers-aws
 - nautilus

@@ -19,11 +19,13 @@ apt:
 
 package_update: true
 packages:
+- adwaita-icon-theme-full
 - alsa-utils
 - awscli
 - baobab
 - build-essential
 - dkms
+- dmz-cursor-theme
 - gdm3
 - gnome-control-center
 - gnome-session
@@ -33,6 +35,7 @@ packages:
 - libc6-dev
 - libcanberra-pulse
 - libglvnd-dev
+- libmfx1
 - libva-drm2
 - libva2
 - libvdpau1
@@ -188,8 +191,8 @@ write_files:
 
 runcmd:
   - systemctl enable init_mnt
-  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.17.0/sunshine-22.04.deb
-  - apt-get install -y ./sunshine-22.04.deb
+  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.18.0/sunshine-ubuntu-22.04-amd64.deb
+  - apt-get install -y ./sunshine-ubuntu-22.04-amd64.deb
   - su -c "systemctl --user enable sunshine" sunshine
   - su -c "systemctl --user enable init_desktop_settings" sunshine
   - su -c "desktop-file-install --dir=/home/sunshine/.config/autostart /usr/local/share/applications/restore.desktop" sunshine

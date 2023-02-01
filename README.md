@@ -1,14 +1,15 @@
 # EC2 Gaming on Linux
 
-Powered by Ubuntu 22.04 on EC2 g4dn.xlarge Spot instances using NVIDIA gaming driver
+Powered by Ubuntu 22.04 and [Sunshine] on
+EC2 g4dn.xlarge Spot instances using NVIDIA gaming driver
 
 ## Features
 
 Current features:
 
- * EC2 launch templates with cloud-init config
+ * EC2 launch templates with [cloud-init] config
  * VPC with public subnet  and security groups to restrict access by IP
- * S3 bucket for fast backup/restore of SteamLibrary to/from instance storage
+ * S3 bucket for fast backup/restore of your Steam Library to/from instance storage using [restic]
 
 ## Howto
 
@@ -48,15 +49,15 @@ Install NVIDIA gaming driver and reboot:
 
     sudo reboot
 
-Setup sunshine and configure username and password for sunshine API user:
+Setup [Sunshine] and configure username and password for sunshine API user:
 
     https --verify=no :47990/api/password newUsername="sunshine" newPassword="sunshine" confirmNewPassword="sunshine"
 
-Set a password for sunshine Linux user:
+Set a password for `sunshine` Linux user:
 
     sudo passwd sunshine
 
-Determine public IPv4 address and connect from Moonlight client:
+Determine public IPv4 address and connect from a [Moonlight] client:
 
     cloud-init query ds.meta_data.public_ipv4
 
@@ -85,3 +86,8 @@ Add apps for different screen resolutions:
     https --verify=no -a sunshine:sunshine :47990/api/apps \
         name="1920x1080" prep-cmd:='[{"do":"xrandr --output HDMI-1 --mode 1920x1080","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
+
+[Sunshine]: https://github.com/LizardByte/Sunshine/
+[cloud-init]: https://cloudinit.readthedocs.io/
+[restic]: https://github.com/restic/restic/
+[Moonlight]: https://github.com/moonlight-stream/moonlight-qt/

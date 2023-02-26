@@ -191,7 +191,7 @@ write_files:
 
 runcmd:
   - systemctl enable init_mnt
-  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.18.1/sunshine-ubuntu-22.04-amd64.deb
+  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.18.4/sunshine-ubuntu-22.04-amd64.deb
   - apt-get install -y ./sunshine-ubuntu-22.04-amd64.deb
   - su -c "systemctl --user enable sunshine" sunshine
   - su -c "systemctl --user enable init_desktop_settings" sunshine

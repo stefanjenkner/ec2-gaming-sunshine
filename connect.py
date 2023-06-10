@@ -14,7 +14,7 @@ elif platform == "darwin":
 def main():
 
     client = boto3.client("ec2")
-    ec2 = boto3.resource("ec2")
+    boto3.resource("ec2")
     response = client.describe_instances(
         Filters=[
             {"Name": "tag:Name", "Values": ["jammy-sunshine-instance"]},

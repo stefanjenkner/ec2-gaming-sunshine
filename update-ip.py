@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import base64
 import logging
 import urllib.request
 import urllib.parse
@@ -8,7 +7,6 @@ import urllib.parse
 import botocore
 import boto3
 
-from jinja2 import Template
 
 STACK_NAME = "jammy-sunshine"
 
@@ -24,7 +22,7 @@ def main():
     try:
         ip = get_ip()
         ip_cidr = f"{ip}/32"
-        response = client.update_stack(
+        client.update_stack(
             StackName=STACK_NAME,
             UsePreviousTemplate=True,
             Parameters=[

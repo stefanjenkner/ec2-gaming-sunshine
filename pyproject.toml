@@ -1,0 +1,10 @@
+[tool.ruff]
+ignore = ["E501"]
+
+[tool.ruff.flake8-quotes]
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
+
+[tool.ruff.mccabe]
+max-complexity = 7

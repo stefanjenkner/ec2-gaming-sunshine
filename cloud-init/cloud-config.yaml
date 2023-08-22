@@ -5,12 +5,6 @@ bootcmd:
 
 apt:
   preserve_sources_list: false
-  sources:
-    steam.list:
-      source: |
-        deb [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-        deb-src [arch=amd64,i386] https://repo.steampowered.com/steam/ stable steam
-      keyid: F24AEA9FB05498B7
   conf: |
     APT {
       Install-Suggests "0";
@@ -46,9 +40,6 @@ packages:
 - pulseaudio
 - pulseaudio-module-gsettings
 - restic
-- steam-launcher
-- steam-libs-amd64
-- steam-libs-i386:i386
 - unzip
 - xdg-desktop-portal-gtk
 - xdg-utils
@@ -196,3 +187,7 @@ runcmd:
   - su -c "systemctl --user enable sunshine" sunshine
   - su -c "systemctl --user enable init_desktop_settings" sunshine
   - su -c "desktop-file-install --dir=/home/sunshine/.config/autostart /usr/local/share/applications/restore.desktop" sunshine
+  - wget https://repo.steampowered.com/steam/archive/stable/steam_latest.deb
+  - apt-get install -y ./steam_latest.deb
+  - apt-get update
+  - apt-get install -y steam-launcher steam-libs-amd64 steam-libs-i386:i386

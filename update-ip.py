@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import logging
-import urllib.request
-import urllib.parse
+import http.client
+import socket
+import ssl
 
 import botocore
 import boto3
@@ -22,6 +23,7 @@ def main():
     try:
         ip = get_ip()
         ip_cidr = f"{ip}/32"
+        logging.info(f"Updating IP whitelisting to: {ip_cidr}")
         client.update_stack(
             StackName=STACK_NAME,
             UsePreviousTemplate=True,
@@ -38,11 +40,23 @@ def main():
         else:
             raise error
 
-
 def get_ip():
+    host = "ifconfig.me"
+    conn = IPv4HTTPSConnection(host)
+    conn.request("GET", "/ip", headers={"Host": host})
+    response = conn.getresponse()
+    ip = response.read().decode("utf-8")
+    conn.close()
+    return ip
 
-    f = urllib.request.urlopen("http://ifconfig.me/ip")
-    return f.read().decode("utf-8")
+class IPv4HTTPSConnection(http.client.HTTPSConnection):
+    def connect(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((self.host, self.port))
+        if self._tunnel_host:
+            self._tunnel()
+        context = ssl.create_default_context()
+        self.sock = context.wrap_socket(self.sock, server_hostname=self.host)
 
 
 if __name__ == "__main__":

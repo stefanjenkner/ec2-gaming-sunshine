@@ -1,4 +1,4 @@
-boto3==1.28.57
+boto3==1.28.62
 botocore==1.31.62
 Jinja2==3.1.2
 jmespath==1.0.1

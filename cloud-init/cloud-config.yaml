@@ -196,3 +196,5 @@ runcmd:
   - su -c "systemctl --user enable sunshine" sunshine
   - su -c "systemctl --user enable init_desktop_settings" sunshine
   - su -c "desktop-file-install --dir=/home/sunshine/.config/autostart /usr/local/share/applications/restore.desktop" sunshine
+  - wget https://github.com/lutris/lutris/releases/download/v0.5.14/lutris_0.5.14_all.deb
+  - apt-get install -y ./lutris_0.5.14_all.deb

@@ -10,12 +10,15 @@ import boto3
 from jinja2 import Template
 
 STACK_NAME = "jammy-sunshine"
+DEFAULT_KEYPAIR = "ec2-gaming"
+INITIAL_WHITELISTED_IP = "127.0.0.1/32"
 
 
 def main():
 
     parser = argparse.ArgumentParser(prog="deploy", epilog="Create or update stack")
-    parser.add_argument("--print-only", action="store_true")
+    parser.add_argument("--print-only", help="Print CF template but do not deploy", action="store_true")
+    parser.add_argument("--keypair", help=f"Name of EC2 keypair to use, defaults to '{DEFAULT_KEYPAIR}'", default=DEFAULT_KEYPAIR)
 
     args = parser.parse_args()
 
@@ -74,8 +77,8 @@ def main():
             StackName=STACK_NAME,
             TemplateBody=template.render(cloud_config=cloud_config_b64_text_),
             Parameters=[
-                {"ParameterKey": "MyIp", "ParameterValue": "127.0.0.1"},
-                {"ParameterKey": "KeyPair", "ParameterValue": "ec2-gaming"},
+                {"ParameterKey": "MyIp", "ParameterValue": INITIAL_WHITELISTED_IP},
+                {"ParameterKey": "KeyPair", "ParameterValue": args.keypair},
             ],
             Capabilities=["CAPABILITY_NAMED_IAM"],
         )

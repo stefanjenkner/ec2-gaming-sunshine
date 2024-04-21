@@ -11,13 +11,17 @@ Current features:
  * VPC with public subnet  and security groups to restrict access by IP
  * S3 bucket for fast backup/restore of your Steam Library to/from instance storage using [restic]
 
-## Howto
+## How-to
 
 Show template:
 
     ./deploy.py --print-only
 
-Create or update stack:
+Deploying the CloudFormation stack the first time requires a keypair (in this case `ec2-gaming`) to exist:
+
+    ./deploy.py --keypair ec2-gaming
+
+When updating CloudFormation stack, passing parameters is not required and existing settings remain untouched:
 
     ./deploy.py
 
@@ -29,7 +33,7 @@ Launch on-demand instance:
 
     aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest
 
-Update IP address in security groups:
+By default, access to the EC2 instance is restriced. To update ane set the whitelisted IP address to the IP address of the caller:
 
     ./update-ip.py
 

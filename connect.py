@@ -2,8 +2,12 @@
 
 import subprocess
 from sys import platform
+import argparse
 
 import boto3
+
+STACK_NAME = "jammy-sunshine"
+DEFAULT_APP = "Low Res Desktop"
 
 if platform == "linux" or platform == "linux2":
     MOONLIGHT_QT = "moonlight-qt"
@@ -13,11 +17,16 @@ elif platform == "darwin":
 
 def main():
 
+    parser = argparse.ArgumentParser(prog="connect", epilog="Start streaming")
+    parser.add_argument("--app", help=f"App to stream, defaults to '{DEFAULT_APP}'", default=DEFAULT_APP)
+
+    args = parser.parse_args()
+
     client = boto3.client("ec2")
     boto3.resource("ec2")
     response = client.describe_instances(
         Filters=[
-            {"Name": "tag:Name", "Values": ["jammy-sunshine-instance"]},
+            {"Name": "tag:Name", "Values": [f"{STACK_NAME}-instance"]},
             {"Name": "instance-state-name", "Values": ["running", "pending"]},
         ]
     )
@@ -35,13 +44,13 @@ def main():
     public_ip = instances[0]["PublicIpAddress"]
     print(f"Connecting to IP {public_ip}")
 
-    if not is_ready(public_ip):
+    if not is_ready(public_ip, args.app):
         subprocess.run([MOONLIGHT_QT, "pair", "--pin", "0000", public_ip])
 
-    subprocess.run([MOONLIGHT_QT, "stream", public_ip, "Low Res Desktop"])
+    subprocess.run([MOONLIGHT_QT, "stream", public_ip, args.app])
 
 
-def is_ready(public_ip):
+def is_ready(public_ip, app):
 
     process = subprocess.Popen(
         f"{MOONLIGHT_QT} list {public_ip}",
@@ -53,7 +62,7 @@ def is_ready(public_ip):
     print(output)
     retval = process.wait()
     print(retval)
-    return retval == 0 and b"Low Res Desktop\n" in output
+    return retval == 0 and b"{app}\n" in output
 
 
 if __name__ == "__main__":

@@ -33,6 +33,11 @@ Launch on-demand instance:
 
     aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest
 
+Launch on-demand instance with custom instance type:
+
+    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest \
+        --instance-type g5.4xlarge
+
 By default, access to the EC2 instance is restriced. To update ane set the whitelisted IP address to the IP address of the caller:
 
     ./update-ip.py
@@ -80,15 +85,15 @@ Launch Steam, Login for the first time and:
 Add apps for different screen resolutions:
 
     https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x720" prep-cmd:='[{"do":"xrandr --output HDMI-1 --mode 1280x720","undo":""}]' \
+        name="1280x720" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x800" prep-cmd:='[{"do":"xrandr --output HDMI-1 --mode 1280x800","undo":""}]' \
+        name="1280x800" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1920x1080" prep-cmd:='[{"do":"xrandr --output HDMI-1 --mode 1920x1080","undo":""}]' \
+        name="1920x1080" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
 [Sunshine]: https://github.com/LizardByte/Sunshine/

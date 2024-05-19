@@ -1,15 +1,18 @@
 # EC2 Gaming on Linux
 
-Powered by Ubuntu 22.04 and [Sunshine] on
-EC2 g4dn.xlarge Spot instances using NVIDIA gaming driver
+Cloud Gaming powered by Ubuntu Linux and [Sunshine] running on EC2 Spot Instances, tested with
+
+ * EC2 g4dn instances using NVIDIA gaming driver
+ * EC2 g5 instances using NVIDIA gaming driver
 
 ## Features
 
 Current features:
 
- * EC2 launch templates with [cloud-init] config
- * VPC with public subnet  and security groups to restrict access by IP
- * S3 bucket for fast backup/restore of your Steam Library to/from instance storage using [restic]
+ * Launch templates for both Spot and On-Demand EC2 instances
+ * Minimalistic Ubuntu Linux 22.04 with [Sunshine], [Steam] and [Lutris] preinstalled
+ * VPC with public subnet and security groups to restrict access by IP
+ * S3 bucket for fast backup/restore of the Steam Library to/from instance storage using [restic]
 
 ## How-to
 
@@ -32,6 +35,11 @@ Launch spot instance:
 Launch on-demand instance:
 
     aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest
+
+Launch on-demand instance with custom instance type:
+
+    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest \
+        --instance-type g5.4xlarge
 
 By default, access to the EC2 instance is restriced. To update ane set the whitelisted IP address to the IP address of the caller:
 
@@ -80,18 +88,20 @@ Launch Steam, Login for the first time and:
 Add apps for different screen resolutions:
 
     https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x720" prep-cmd:='[{"do":"xrandr --output HDMI-1 --mode 1280x720","undo":""}]' \
+        name="1280x720" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x800" prep-cmd:='[{"do":"xrandr --output HDMI-1 --mode 1280x800","undo":""}]' \
+        name="1280x800" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1920x1080" prep-cmd:='[{"do":"xrandr --output HDMI-1 --mode 1920x1080","undo":""}]' \
+        name="1920x1080" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
-[Sunshine]: https://github.com/LizardByte/Sunshine/
 [cloud-init]: https://cloudinit.readthedocs.io/
-[restic]: https://github.com/restic/restic/
+[Lutris]: https://lutris.net
 [Moonlight]: https://github.com/moonlight-stream/moonlight-qt/
+[restic]: https://github.com/restic/restic/
+[Steam]: https://repo.steampowered.com/steam/
+[Sunshine]: https://github.com/LizardByte/Sunshine/

@@ -27,6 +27,7 @@ packages:
 - dkms
 - dmz-cursor-theme
 - gdm3
+- gedit
 - gnome-control-center
 - gnome-session
 - gnome-shell-extension-appindicator
@@ -48,7 +49,6 @@ packages:
 - restic
 - steam-launcher
 - steam-libs-amd64
-- steam-libs-i386:i386
 - unzip
 - xdg-desktop-portal-gtk
 - xdg-utils
@@ -99,12 +99,13 @@ write_files:
 - path: /opt/install_nvidia_driver.sh
   content: |
     #!/bin/bash
+    set -euo pipefail
     cd /mnt
     aws s3 cp --recursive s3://nvidia-gaming/linux/latest/ .
     unzip *Cloud_Gaming-Linux-Guest-Drivers.zip -d nvidia-drivers
     rm -f *Cloud_Gaming-Linux-Guest-Drivers.zip
-    chmod +x ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
-    /bin/sh ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run --dkms --tmpdir=/mnt --silent
+    chmod +x ./nvidia-drivers/*Cloud_Gaming-Linux-Guest-Drivers/NVIDIA-Linux-x86_64*-grid.run
+    /bin/sh ./nvidia-drivers/*Cloud_Gaming-Linux-Guest-Drivers/NVIDIA-Linux-x86_64*-grid.run --dkms --tmpdir=/mnt --silent
     rm -rf ./nvidia-drivers/
     kversion=$(readlink /boot/initrd.img |sed 's/initrd.img-//g')
     dkms autoinstall -k $kversion
@@ -113,8 +114,8 @@ write_files:
     vGamingMarketplace=2
     EOF
     curl -o /etc/nvidia/GridSwCert.txt "https://nvidia-gaming.s3.amazonaws.com/GridSwCert-Archive/GridSwCertLinux_2021_10_2.cert"
-    nvidia-smi -q | head
     nvidia-xconfig --preserve-busid --enable-all-gpus
+    nvidia-smi -q | head
   permissions: '0755'
 - path: /etc/systemd/system/init_mnt.service
   content: |
@@ -191,8 +192,11 @@ write_files:
 
 runcmd:
   - systemctl enable init_mnt
+  - rm -f /etc/apt/sources.list.d/steam.list
+  - apt update
+  - apt install -y libgl1-mesa-dri:i386 steam-libs-i386:i386 libgl1-mesa-dri:amd64 libgl1-mesa-glx:i386 libgl1-mesa-glx:amd64 libvulkan1:i386 libgnutls30:i386
   - wget https://github.com/LizardByte/Sunshine/releases/download/v0.18.4/sunshine-ubuntu-22.04-amd64.deb
-  - apt-get install -y ./sunshine-ubuntu-22.04-amd64.deb
+  - apt install -y ./sunshine-ubuntu-22.04-amd64.deb
   - su -c "systemctl --user enable sunshine" sunshine
   - su -c "systemctl --user enable init_desktop_settings" sunshine
   - su -c "desktop-file-install --dir=/home/sunshine/.config/autostart /usr/local/share/applications/restore.desktop" sunshine

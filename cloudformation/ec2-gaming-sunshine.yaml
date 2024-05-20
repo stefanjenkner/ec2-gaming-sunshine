@@ -7,7 +7,7 @@ Parameters:
   KeyPair:
     Description: EC2 Key Pair
     Type: "AWS::EC2::KeyPair::KeyName"
-  LatestAmiId:
+  LatestAmiIdJammy:
     Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
     Default: "/aws/service/canonical/ubuntu/server/jammy/stable/current/amd64/hvm/ebs-gp2/ami-id"
 
@@ -154,10 +154,10 @@ Resources:
           FromPort: 27036
           ToPort: 27037
           CidrIp: 0.0.0.0/0
-  LaunchTemplateSpot:
+  LaunchTemplateJammySpot:
     Type: "AWS::EC2::LaunchTemplate"
     Properties:
-      LaunchTemplateName: !Sub "${AWS::StackName}-spot"
+      LaunchTemplateName: !Sub "${AWS::StackName}-jammy-spot"
       LaunchTemplateData:
         IamInstanceProfile:
           Arn: !GetAtt InstanceProfile.Arn
@@ -179,7 +179,7 @@ Resources:
               DeleteOnTermination: true
               Encrypted: true
             DeviceName: /dev/sda1
-        ImageId: !Ref LatestAmiId
+        ImageId: !Ref LatestAmiIdJammy
         InstanceType: g4dn.xlarge
         KeyName: !Ref KeyPair
         InstanceMarketOptions:
@@ -192,12 +192,18 @@ Resources:
             Tags:
               - Key: Name
                 Value: !Sub "${AWS::StackName}-instance"
+              - Key: Distribution
+                Value: Ubuntu
+              - Key: Release
+                Value: 22.04
+              - Key: Codename
+                Value: jammy
         UserData: |
-          {{ cloud_config }}
-  LaunchTemplateOnDemand:
+          {{ cloud_config["jammy"] }}
+  LaunchTemplateJammyOnDemand:
     Type: "AWS::EC2::LaunchTemplate"
     Properties:
-      LaunchTemplateName: !Sub "${AWS::StackName}-on-demand"
+      LaunchTemplateName: !Sub "${AWS::StackName}-jammy-on-demand"
       LaunchTemplateData:
         IamInstanceProfile:
           Arn: !GetAtt InstanceProfile.Arn
@@ -219,7 +225,7 @@ Resources:
               DeleteOnTermination: true
               Encrypted: true
             DeviceName: /dev/sda1
-        ImageId: !Ref LatestAmiId
+        ImageId: !Ref LatestAmiIdJammy
         InstanceType: g4dn.xlarge
         KeyName: !Ref KeyPair
         TagSpecifications:
@@ -227,8 +233,14 @@ Resources:
             Tags:
               - Key: Name
                 Value: !Sub "${AWS::StackName}-instance"
+              - Key: Distribution
+                Value: Ubuntu
+              - Key: Release
+                Value: 22.04
+              - Key: Codename
+                Value: jammy
         UserData: |
-          {{ cloud_config }}
+          {{ cloud_config["jammy"] }}
   LibraryBucket:
     Type: AWS::S3::Bucket
     Properties:

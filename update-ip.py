@@ -8,9 +8,7 @@ import ssl
 import botocore
 import boto3
 
-
-STACK_NAME = "jammy-sunshine"
-
+STACK_NAME = "ec2-gaming-sunshine"
 
 def main():
 

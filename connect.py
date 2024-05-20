@@ -6,7 +6,7 @@ import argparse
 
 import boto3
 
-STACK_NAME = "jammy-sunshine"
+STACK_NAME = "ec2-gaming-sunshine"
 DEFAULT_APP = "Low Res Desktop"
 
 if platform == "linux" or platform == "linux2":

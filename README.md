@@ -47,6 +47,8 @@ By default, access to the EC2 instance is restriced. To update ane set the white
 
 ## Manual steps on first boot
 
+### Install NVIDIA driver
+
 Login to EC2 instance:
 
     ssh ubuntu@<IP>
@@ -61,7 +63,9 @@ Install NVIDIA gaming driver and reboot:
 
     sudo reboot
 
-Setup [Sunshine] and configure username and password for sunshine API user:
+### Setup Sunshine
+
+Configure username and password for sunshine API user:
 
     https --verify=no :47990/api/password newUsername="sunshine" newPassword="sunshine" confirmNewPassword="sunshine"
 
@@ -81,7 +85,7 @@ Launch Steam, Login for the first time and:
 
   * Move the Steam Library to `/mnt/sunshine/SteamLibrary` (Setting/Downloads/Steam Library Folder)
   * Enable Steam Play (Proton) for supported and all other titles (Setting/Steam Play)
-  * Run Backup (via appliction icon or `/usr/local/bin/backup` before next shutdown/reboot)
+  * Run Backup (via application icon or `/usr/local/bin/backup` before next shutdown/reboot)
 
 ## Optional steps
 

@@ -96,6 +96,18 @@ write_files:
 - path: /etc/udev/rules.d/85-sunshine-input.rules
   content: |
     KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"
+- path: /opt/sunshine_systemd_user_service.patch
+  content: |
+    5,7c5
+    < PartOf=graphical-session.target
+    < Wants=xdg-desktop-autostart.target
+    < After=xdg-desktop-autostart.target
+    ---
+    > After=graphical-session.target
+    15c13
+    < WantedBy=xdg-desktop-autostart.target
+    ---
+    > WantedBy=graphical-session.target
 - path: /opt/install_nvidia_driver.sh
   content: |
     #!/bin/bash
@@ -195,8 +207,10 @@ runcmd:
   - rm -f /etc/apt/sources.list.d/steam.list
   - apt update
   - apt install -y libgl1-mesa-dri:i386 steam-libs-i386:i386 libgl1-mesa-dri:amd64 libgl1-mesa-glx:i386 libgl1-mesa-glx:amd64 libvulkan1:i386 libgnutls30:i386
-  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.18.4/sunshine-ubuntu-22.04-amd64.deb
+  - wget https://github.com/LizardByte/Sunshine/releases/download/v0.23.1/sunshine-ubuntu-22.04-amd64.deb
   - apt install -y ./sunshine-ubuntu-22.04-amd64.deb
+  - rm -f ./sunshine-ubuntu-22.04-amd64.deb
+  - patch /usr/lib/systemd/user/sunshine.service < /opt/sunshine_systemd_user_service.patch
   - su -c "systemctl --user enable sunshine" sunshine
   - su -c "systemctl --user enable init_desktop_settings" sunshine
   - su -c "desktop-file-install --dir=/home/sunshine/.config/autostart /usr/local/share/applications/restore.desktop" sunshine

@@ -30,18 +30,18 @@ When updating CloudFormation stack, passing parameters is not required and exist
 
 Launch spot instance:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-spot,Version=\$Latest
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-spot,Version=\$Latest
 
 Launch on-demand instance:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
 
 Launch on-demand instance with custom instance type:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=jammy-sunshine-on-demand,Version=\$Latest \
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest \
         --instance-type g5.4xlarge
 
-By default, access to the EC2 instance is restriced. To update ane set the whitelisted IP address to the IP address of the caller:
+By default, access to the EC2 instance is restriced. To update the whitelisted IP address to the IP address of the caller:
 
     ./update-ip.py
 

@@ -2,6 +2,7 @@
 
 import boto3
 
+STACK_NAME = "ec2-gaming-sunshine"
 
 def main():
 
@@ -9,7 +10,7 @@ def main():
     ec2 = boto3.resource("ec2")
     response = client.describe_instances(
         Filters=[
-            {"Name": "tag:Name", "Values": ["jammy-sunshine-instance"]},
+            {"Name": "tag:Name", "Values": [f"{STACK_NAME}-instance"]},
             {"Name": "instance-state-name", "Values": ["stopped"]},
         ]
     )

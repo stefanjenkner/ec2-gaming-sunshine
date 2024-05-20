@@ -165,7 +165,7 @@ write_files:
 - path: /etc/profile.d/restic.sh
   content: |
     #!/bin/sh
-    export RESTIC_REPOSITORY=s3:https://s3.eu-central-1.amazonaws.com/jammy-sunshine-library
+    export RESTIC_REPOSITORY=s3:https://s3.eu-central-1.amazonaws.com/ec2-gaming-sunshine-library
     export RESTIC_PASSWORD=sunshine
   permissions: '0644'
 - path: /usr/local/bin/backup

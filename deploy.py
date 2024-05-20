@@ -9,7 +9,7 @@ import boto3
 
 from jinja2 import Template
 
-STACK_NAME = "jammy-sunshine"
+STACK_NAME = "ec2-gaming-sunshine"
 DEFAULT_KEYPAIR = "ec2-gaming"
 INITIAL_WHITELISTED_IP = "127.0.0.1/32"
 
@@ -22,15 +22,17 @@ def main():
 
     args = parser.parse_args()
 
-    with open("cloudformation/jammy-sunshine.yaml") as cf_:
+    with open("cloudformation/ec2-gaming-sunshine.yaml") as cf_:
         template = Template(cf_.read())
 
-    with open("cloud-init/cloud-config.yaml", "rb") as cloud_config_:
-        cloud_config_b64_ = base64.b64encode(cloud_config_.read())
-        cloud_config_b64_text_ = cloud_config_b64_.decode("ascii")
+    cloud_config = {}
+    for flavour in ["jammy"]:
+        with open(f"cloud-init/cloud-config-{flavour}.yaml", "rb") as cloud_config_:
+            cloud_config_b64_ = base64.b64encode(cloud_config_.read())
+            cloud_config[flavour] = cloud_config_b64_.decode("ascii")
 
     if args.print_only:
-        print(template.render(cloud_config=cloud_config_b64_text_))
+        print(template.render(cloud_config=cloud_config))
         return
 
     logging.basicConfig(level=logging.INFO)
@@ -56,7 +58,7 @@ def main():
         try:
             response = client.update_stack(
                 StackName=STACK_NAME,
-                TemplateBody=template.render(cloud_config=cloud_config_b64_text_),
+                TemplateBody=template.render(cloud_config=cloud_config),
                 Parameters=[
                     {"ParameterKey": "MyIp", "UsePreviousValue": True},
                     {"ParameterKey": "KeyPair", "UsePreviousValue": True},
@@ -75,7 +77,7 @@ def main():
         logging.info(f"Creating stack {STACK_NAME}")
         response = client.create_stack(
             StackName=STACK_NAME,
-            TemplateBody=template.render(cloud_config=cloud_config_b64_text_),
+            TemplateBody=template.render(cloud_config=cloud_config),
             Parameters=[
                 {"ParameterKey": "MyIp", "ParameterValue": INITIAL_WHITELISTED_IP},
                 {"ParameterKey": "KeyPair", "ParameterValue": args.keypair},

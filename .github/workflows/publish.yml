@@ -15,9 +15,9 @@ jobs:
       - name: Lint
         run: ruff check .
       - name: Generate template
-        run: python deploy.py --print-only > jammy-sunshine.template
+        run: python deploy.py --print-only > ec2-gaming-sunshine.template
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: jammy-sunshine.template
+          files: ec2-gaming-sunshine.template

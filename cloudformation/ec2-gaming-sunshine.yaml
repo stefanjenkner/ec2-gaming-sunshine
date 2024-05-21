@@ -10,6 +10,9 @@ Parameters:
   LatestAmiIdJammy:
     Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
     Default: "/aws/service/canonical/ubuntu/server/jammy/stable/current/amd64/hvm/ebs-gp2/ami-id"
+  LatestAmiIdBookworm:
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: "/aws/service/debian/release/bookworm/latest/amd64"
 
 Resources:
   InstanceRole:
@@ -154,6 +157,93 @@ Resources:
           FromPort: 27036
           ToPort: 27037
           CidrIp: 0.0.0.0/0
+  LaunchTemplateBookwormSpot:
+    Type: "AWS::EC2::LaunchTemplate"
+    Properties:
+      LaunchTemplateName: !Sub "${AWS::StackName}-bookworm-spot"
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn: !GetAtt InstanceProfile.Arn
+        NetworkInterfaces:
+          - DeviceIndex: 0
+            AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            SubnetId: !Ref Subnet1
+            Groups:
+              - !GetAtt AdminAccess.GroupId
+              - !GetAtt GamingAccess.GroupId
+              - !GetAtt RemotePlayAccess.GroupId
+        PrivateDnsNameOptions:
+          HostnameType: resource-name
+        BlockDeviceMappings:
+          - Ebs:
+              VolumeSize: 20
+              VolumeType: gp2
+              DeleteOnTermination: true
+              Encrypted: true
+            DeviceName: /dev/xvda
+        ImageId: !Ref LatestAmiIdBookworm
+        InstanceType: g4dn.xlarge
+        KeyName: !Ref KeyPair
+        InstanceMarketOptions:
+          MarketType: spot
+          SpotOptions:
+            InstanceInterruptionBehavior: stop
+            SpotInstanceType: persistent
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${AWS::StackName}-instance"
+              - Key: Distribution
+                Value: Debian
+              - Key: Release
+                Value: 12
+              - Key: Codename
+                Value: bookworm
+        UserData: |
+          {{ cloud_config["bookworm"] }}
+  LaunchTemplateBookwormOnDemand:
+    Type: "AWS::EC2::LaunchTemplate"
+    Properties:
+      LaunchTemplateName: !Sub "${AWS::StackName}-bookworm-on-demand"
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn: !GetAtt InstanceProfile.Arn
+        NetworkInterfaces:
+          - DeviceIndex: 0
+            AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            SubnetId: !Ref Subnet1
+            Groups:
+              - !GetAtt AdminAccess.GroupId
+              - !GetAtt GamingAccess.GroupId
+              - !GetAtt RemotePlayAccess.GroupId
+        PrivateDnsNameOptions:
+          HostnameType: resource-name
+        BlockDeviceMappings:
+          - Ebs:
+              VolumeSize: 20
+              VolumeType: gp2
+              DeleteOnTermination: true
+              Encrypted: true
+            DeviceName: /dev/xvda
+        ImageId: !Ref LatestAmiIdBookworm
+        InstanceType: g4dn.xlarge
+        KeyName: !Ref KeyPair
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${AWS::StackName}-instance"
+              - Key: Distribution
+                Value: Debian
+              - Key: Release
+                Value: 12
+              - Key: Codename
+                Value: bookworm
+        UserData: |
+          {{ cloud_config["bookworm"] }}
   LaunchTemplateJammySpot:
     Type: "AWS::EC2::LaunchTemplate"
     Properties:

@@ -26,7 +26,7 @@ def main():
         template = Template(cf_.read())
 
     cloud_config = {}
-    for flavour in ["jammy"]:
+    for flavour in ["jammy", "bookworm"]:
         with open(f"cloud-init/cloud-config-{flavour}.yaml", "rb") as cloud_config_:
             cloud_config_b64_ = base64.b64encode(cloud_config_.read())
             cloud_config[flavour] = cloud_config_b64_.decode("ascii")

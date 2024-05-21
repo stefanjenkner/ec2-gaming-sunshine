@@ -1,6 +1,6 @@
 # EC2 Gaming on Linux
 
-Cloud Gaming powered by Ubuntu Linux and [Sunshine] running on EC2 Spot Instances, tested with
+Cloud Gaming powered by [Sunshine] on EC2 Spot Instances, tested with:
 
  * EC2 g4dn instances using NVIDIA gaming driver
  * EC2 g5 instances using NVIDIA gaming driver
@@ -34,7 +34,10 @@ Launch spot instance:
 
 Launch on-demand instance:
 
+    # ubuntu jammy (22.04)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
+    # or: debian bookworm (12)
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-bookworm-on-demand,Version=\$Latest
 
 Launch on-demand instance with custom instance type:
 
@@ -49,9 +52,12 @@ By default, access to the EC2 instance is restriced. To update the whitelisted I
 
 ### Install NVIDIA driver
 
-Login to EC2 instance:
+Login to the EC2 instance:
 
+    # for ubuntu (jammy) instances
     ssh ubuntu@<IP>
+    # for debian (bookworm) instances
+    ssh admin@<IP>
 
 Wait for cloud-init to finish:
 
@@ -69,11 +75,28 @@ Configure username and password for sunshine API user:
 
     https --verify=no :47990/api/password newUsername="sunshine" newPassword="sunshine" confirmNewPassword="sunshine"
 
+Add apps for different screen resolutions:
+
+    # 1280x720
+    https --verify=no -a sunshine:sunshine :47990/api/apps \
+        name="1280x720" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
+        output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
+
+    # 1280x800
+    https --verify=no -a sunshine:sunshine :47990/api/apps \
+        name="1280x800" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
+        output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
+
+    # 1920x1080
+    https --verify=no -a sunshine:sunshine :47990/api/apps \
+        name="1920x1080" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
+        output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
+
 Set a password for `sunshine` Linux user:
 
     sudo passwd sunshine
 
-Determine public IPv4 address and connect from a [Moonlight] client:
+Determine the public IPv4 address and connect via the [Moonlight] client:
 
     cloud-init query ds.meta_data.public_ipv4
 
@@ -86,22 +109,6 @@ Launch Steam, Login for the first time and:
   * Move the Steam Library to `/mnt/sunshine/SteamLibrary` (Setting/Downloads/Steam Library Folder)
   * Enable Steam Play (Proton) for supported and all other titles (Setting/Steam Play)
   * Run Backup (via application icon or `/usr/local/bin/backup` before next shutdown/reboot)
-
-## Optional steps
-
-Add apps for different screen resolutions:
-
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x720" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
-        output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
-
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x800" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
-        output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
-
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1920x1080" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
-        output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
 [cloud-init]: https://cloudinit.readthedocs.io/
 [Lutris]: https://lutris.net

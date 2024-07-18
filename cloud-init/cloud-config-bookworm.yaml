@@ -132,6 +132,7 @@ write_files:
     [Unit]
     After = network-online.target
     Wants = network-online.target
+    RequiresMountsFor = /mnt
     [Service]
     Type = oneshot
     RemainAfterExit = yes
@@ -163,7 +164,8 @@ write_files:
 - path: /etc/profile.d/restic.sh
   content: |
     #!/bin/sh
-    export RESTIC_REPOSITORY=s3:https://s3.eu-central-1.amazonaws.com/ec2-gaming-sunshine-library
+    REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep -oP '(?<="region" : ")[^"]*')
+    export RESTIC_REPOSITORY=s3:https://s3.${REGION}.amazonaws.com/ec2-gaming-sunshine-library
     export RESTIC_PASSWORD=sunshine
   permissions: '0644'
 - path: /usr/local/bin/backup

@@ -1,5 +1,5 @@
 boto3==1.35.24
-botocore==1.35.24
+botocore==1.35.34
 Jinja2==3.1.4
 jmespath==1.0.1
 MarkupSafe==2.1.5

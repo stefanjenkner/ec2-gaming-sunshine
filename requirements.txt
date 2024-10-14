@@ -2,7 +2,7 @@ boto3==1.35.39
 botocore==1.35.39
 Jinja2==3.1.4
 jmespath==1.0.1
-MarkupSafe==2.1.5
+MarkupSafe==3.0.1
 python-dateutil==2.9.0.post0
 ruff==0.6.9
 s3transfer==0.10.3

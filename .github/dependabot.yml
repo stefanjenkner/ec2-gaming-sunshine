@@ -4,6 +4,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      aws-sdk:
+        patterns:
+          - "boto3"
+          - "botocore"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

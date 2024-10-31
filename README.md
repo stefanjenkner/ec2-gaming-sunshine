@@ -7,12 +7,16 @@ Cloud Gaming powered by [Sunshine] on EC2 Spot Instances, tested with:
 
 ## Features
 
-Current features:
+Stable features:
 
  * Launch templates for both Spot and On-Demand EC2 instances
  * Minimalistic Ubuntu Linux 22.04 with [Sunshine], [Steam] and [Lutris] preinstalled
  * VPC with public subnet and security groups to restrict access by IP
  * S3 bucket for fast backup/restore of the Steam Library to/from instance storage using [restic]
+
+Experimental features:
+
+* Debian Bookworm (without gamepad support at this time)
 
 ## How-to
 
@@ -109,6 +113,12 @@ Launch Steam, Login for the first time and:
   * Move the Steam Library to `/mnt/sunshine/SteamLibrary` (Setting/Downloads/Steam Library Folder)
   * Enable Steam Play (Proton) for supported and all other titles (Setting/Steam Play)
   * Run Backup (via application icon or `/usr/local/bin/backup` before next shutdown/reboot)
+
+## Known issues
+
+ * no gamepad support in Debian Bookworm (12) due to missing `uinput` module in kernel flavour `cloud-amd64`
+ * no percentage indicator when restoring instance storage from S3
+
 
 [cloud-init]: https://cloudinit.readthedocs.io/
 [Lutris]: https://lutris.net

@@ -25,6 +25,9 @@ jobs:
       - name: build
         run: |
           python deploy.py --print-only > ec2-gaming-sunshine.template
+    artifacts:
+      paths:
+        - ec2-gaming-sunshine.template
   lint:
     needs: [build]
     runs-on: ubuntu-latest

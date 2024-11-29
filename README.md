@@ -2,17 +2,17 @@
 
 Cloud Gaming powered by [Sunshine] on EC2 Spot Instances, tested with:
 
- * EC2 g4dn instances using NVIDIA gaming driver
- * EC2 g5 instances using NVIDIA gaming driver
+* EC2 g4dn instances using NVIDIA gaming driver
+* EC2 g5 instances using NVIDIA gaming driver
 
 ## Features
 
 Stable features:
 
- * Launch templates for both Spot and On-Demand EC2 instances
- * Minimalistic Ubuntu Linux 22.04 with [Sunshine], [Steam] and [Lutris] preinstalled
- * VPC with public subnet and security groups to restrict access by IP
- * S3 bucket for fast backup/restore of the Steam Library to/from instance storage using [restic]
+* Launch templates for both Spot and On-Demand EC2 instances
+* Minimalistic Ubuntu Linux 22.04 with [Sunshine], [Steam] and [Lutris] preinstalled
+* VPC with public subnet and security groups to restrict access by IP
+* S3 bucket for fast backup/restore of the Steam Library to/from instance storage using [restic]
 
 Experimental features:
 
@@ -48,7 +48,8 @@ Launch on-demand instance with custom instance type:
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest \
         --instance-type g5.4xlarge
 
-By default, access to the EC2 instance is restriced. To update the whitelisted IP address to the IP address of the caller:
+By default, access to the EC2 instance is restriced. To update the whitelisted IP address to the IP address of the
+caller:
 
     ./update-ip.py
 
@@ -63,7 +64,7 @@ Login to the EC2 instance:
     # for debian (bookworm) instances
     ssh admin@<IP>
 
-Wait for cloud-init to finish:
+Wait for [cloud-init] to finish:
 
     tail -f /var/log/cloud-init.log
 
@@ -110,15 +111,29 @@ Allow connection by entering the PIN:
 
 Launch Steam, Login for the first time and:
 
-  * Move the Steam Library to `/mnt/sunshine/SteamLibrary` (Setting/Downloads/Steam Library Folder)
-  * Enable Steam Play (Proton) for supported and all other titles (Setting/Steam Play)
-  * Run Backup (via application icon or `/usr/local/bin/backup` before next shutdown/reboot)
+* Move the Steam Library to `/mnt/sunshine/SteamLibrary` (Setting/Downloads/Steam Library Folder)
+* Enable Steam Play (Proton) for supported and all other titles (Setting/Steam Play)
+* Run Backup (via application icon or `/usr/local/bin/backup` before next shutdown/reboot)
 
 ## Known issues
 
- * no gamepad support in Debian Bookworm (12) due to missing `uinput` module in kernel flavour `cloud-amd64`
- * no percentage indicator when restoring instance storage from S3
+* no gamepad support in Debian Bookworm (12) due to missing `uinput` module in kernel flavour `cloud-amd64`
+* no percentage indicator when restoring instance storage from S3
 
+## Contribution
+
+Prerequisites for development:
+
+<details>
+<summary>macOS</summary>
+
+    brew install pre-commit commitizen
+
+</details>
+
+Set up pre-commit hooks:
+
+    pre-commit install && pre-commit install --hook-type commit-msg && pre-commit run
 
 [cloud-init]: https://cloudinit.readthedocs.io/
 [Lutris]: https://lutris.net

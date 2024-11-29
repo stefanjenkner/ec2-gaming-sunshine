@@ -25,9 +25,10 @@ jobs:
       - name: build
         run: |
           python deploy.py --print-only > ec2-gaming-sunshine.template
-    artifacts:
-      paths:
-        - ec2-gaming-sunshine.template
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cloudformation-template
+          path: ec2-gaming-sunshine.template
   lint:
     needs: [build]
     runs-on: ubuntu-latest
@@ -49,9 +50,9 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/download-artifact@v4
         with:
-          cache: 'pip'
+          name: cloudformation-template
       - uses: go-semantic-release/action@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

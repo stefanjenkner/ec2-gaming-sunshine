@@ -56,14 +56,8 @@ packages:
 - xserver-xorg-dev
 - xserver-xorg-input-libinput
 
-# required on first boot only
-fs_setup:
-- label: instance_storage
-  device: /dev/nvme1n1
-  filesystem: ext4
-
 mounts:
-- ["/dev/nvme1n1", "/mnt", "ext4", "defaults,nofail,x-systemd.requires=cloud-init.service,x-systemd.makefs", "0", "2"]
+- ["/dev/instance-storage", "/mnt", "ext4", "defaults,nofail,x-systemd.requires=cloud-init.service,x-systemd.makefs", "0", "2"]
 
 users:
 - default
@@ -94,6 +88,9 @@ write_files:
 - path: /etc/udev/rules.d/85-sunshine-input.rules
   content: |
     KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"
+- path: /etc/udev/rules.d/99-ec2-cloud-storage.rules
+  content: |
+    KERNEL=="nvme[0-9]*n[0-9]*", ENV{DEVTYPE}=="disk", ATTRS{model}=="Amazon EC2 NVMe Instance Storage", ATTRS{serial}=="?*", SYMLINK+="instance-storage"
 - path: /opt/sunshine_systemd_user_service.patch
   content: |
     5,7c5
@@ -111,7 +108,9 @@ write_files:
     #!/bin/bash
     set -euo pipefail
     cd /mnt
-    aws s3 cp --recursive s3://nvidia-gaming/linux/latest/ .
+    #aws s3 cp --recursive s3://nvidia-gaming/linux/latest/ .
+    #aws s3 ls s3://nvidia-gaming/linux/ .
+    aws s3 cp s3://nvidia-gaming/linux/550.73-Apr2024-Cloud_Gaming-Linux-Guest-Drivers.zip .
     unzip *Cloud_Gaming-Linux-Guest-Drivers.zip -d nvidia-drivers
     rm -f *Cloud_Gaming-Linux-Guest-Drivers.zip
     chmod +x ./nvidia-drivers/*Cloud_Gaming-Linux-Guest-Drivers/NVIDIA-Linux-x86_64*-grid.run

@@ -20,7 +20,6 @@ major_on_zero = false
 allow_zero_version = true
 no_git_verify = false
 tag_format = "{version}"
-dist_glob_patterns = ["ec2-gaming-sunshine.template"]
 
 [tool.semantic_release.commit_author]
 env = "GIT_COMMIT_AUTHOR"

@@ -67,8 +67,9 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: false
+          git_committer_name: "github-actions"
+          git_committer_email: "actions@users.noreply.github.com"
       - uses: python-semantic-release/publish-action@v9
-        id: publish
         if: steps.release.outputs.released == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

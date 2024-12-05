@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import subprocess
 import argparse
+import subprocess
 import sys
 from sys import platform
 

@@ -7,8 +7,8 @@ import socket
 import ssl
 import sys
 
-import botocore
 import boto3
+import botocore
 
 DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
 

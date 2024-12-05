@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
+import argparse
 import base64
 import logging
-import argparse
 import sys
 
-import botocore
 import boto3
-
+import botocore
 from jinja2 import Template
 
 DEFAULT_STACK_NAME = "ec2-gaming-sunshine"

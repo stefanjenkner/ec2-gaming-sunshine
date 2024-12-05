@@ -46,7 +46,7 @@ def main():
     except botocore.exceptions.ClientError as error:
         if error.response["Error"]["Code"] == "ValidationError":
             logging.error(error.response["Error"]["Message"])
-            sys.exit(1)
+            return 1
         else:
             raise error
 
@@ -72,4 +72,4 @@ class IPv4HTTPSConnection(http.client.HTTPSConnection):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

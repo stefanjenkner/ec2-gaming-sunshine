@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import subprocess
-from sys import platform
 import argparse
+import sys
+from sys import platform
 
 import boto3
 
@@ -41,12 +42,12 @@ def main():
 
     if len(reservations) == 0:
         print("No running instances found, aborting.")
-        return
+        return 1
 
     instances = reservations[0]["Instances"]
     if len(instances) > 1:
         print("More than one instance found, aborting.")
-        return
+        return 1
 
     public_ip = instances[0]["PublicIpAddress"]
     print(f"Connecting to IP {public_ip}")
@@ -72,4 +73,4 @@ def is_ready(public_ip, app):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

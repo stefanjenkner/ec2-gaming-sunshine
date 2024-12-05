@@ -3,6 +3,7 @@
 import base64
 import logging
 import argparse
+import sys
 
 import botocore
 import boto3
@@ -43,7 +44,7 @@ def main():
 
     if args.print_only:
         print(template.render(cloud_config=cloud_config))
-        return
+        return 0
 
     logging.basicConfig(level=logging.INFO)
 
@@ -59,6 +60,7 @@ def main():
     except botocore.exceptions.ClientError as error:
         if error.response["Error"]["Code"] == "ValidationError":
             logging.info(f"Stack {stack_name} does not exist yet")
+            return 1
         else:
             raise error
 
@@ -79,6 +81,7 @@ def main():
         except botocore.exceptions.ClientError as error:
             if error.response["Error"]["Code"] == "ValidationError":
                 logging.error(error.response["Error"]["Message"])
+                return 1
             else:
                 raise error
 
@@ -96,4 +99,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

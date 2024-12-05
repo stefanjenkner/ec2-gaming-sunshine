@@ -2,6 +2,7 @@
 
 import subprocess
 import argparse
+import sys
 
 import boto3
 
@@ -31,12 +32,12 @@ def main():
 
     if len(reservations) == 0:
         print("No running instances found, aborting.")
-        return
+        return 1
 
     instances = reservations[0]["Instances"]
     if len(instances) > 1:
         print("More than one instance found, aborting.")
-        return
+        return 1
 
     public_ip = instances[0]["PublicIpAddress"]
     distribution = list(
@@ -52,4 +53,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

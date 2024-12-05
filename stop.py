@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import sys
 
 import boto3
 
@@ -29,7 +30,7 @@ def main():
 
     if len(reservations) == 0:
         print("No running instances found, aborting.")
-        return
+        return 1
 
     instances = reservations[0]["Instances"]
     for instance in instances:
@@ -41,4 +42,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

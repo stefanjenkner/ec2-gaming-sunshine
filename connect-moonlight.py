@@ -17,7 +17,7 @@ elif platform == "darwin":
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="connect", epilog="Start streaming")
+    parser = argparse.ArgumentParser(prog="connect-moonlight", epilog="Start streaming")
     parser.add_argument(
         "--stack",
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",

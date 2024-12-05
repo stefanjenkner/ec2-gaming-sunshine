@@ -9,6 +9,8 @@ updates:
         patterns:
           - "boto3"
           - "botocore"
+          - "awscli"
+          - "s3transfer"
     commit-message:
       prefix: "chore"
       prefix-development: "chore"

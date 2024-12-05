@@ -1,16 +1,27 @@
 #!/usr/bin/env python
 
+import argparse
+
 import boto3
 
-STACK_NAME = "ec2-gaming-sunshine"
+DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
+
 
 def main():
+    parser = argparse.ArgumentParser(prog="stop", epilog="Stop EC2 instance")
+    parser.add_argument(
+        "--stack",
+        help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
+        default=DEFAULT_STACK_NAME,
+    )
+    args = parser.parse_args()
+    stack_name = args.stack
 
     client = boto3.client("ec2")
     ec2 = boto3.resource("ec2")
     response = client.describe_instances(
         Filters=[
-            {"Name": "tag:Name", "Values": [f"{STACK_NAME}-instance"]},
+            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
             {"Name": "instance-state-name", "Values": ["running", "pending"]},
         ]
     )

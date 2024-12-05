@@ -6,7 +6,7 @@ import argparse
 
 import boto3
 
-STACK_NAME = "ec2-gaming-sunshine"
+DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
 DEFAULT_APP = "Low Res Desktop"
 
 if platform == "linux" or platform == "linux2":
@@ -16,17 +16,24 @@ elif platform == "darwin":
 
 
 def main():
-
     parser = argparse.ArgumentParser(prog="connect", epilog="Start streaming")
-    parser.add_argument("--app", help=f"App to stream, defaults to '{DEFAULT_APP}'", default=DEFAULT_APP)
+    parser.add_argument(
+        "--stack",
+        help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
+        default=DEFAULT_STACK_NAME,
+    )
+    parser.add_argument(
+        "--app", help=f"App to stream, defaults to '{DEFAULT_APP}'", default=DEFAULT_APP
+    )
 
     args = parser.parse_args()
+    stack_name = args.stack
 
     client = boto3.client("ec2")
     boto3.resource("ec2")
     response = client.describe_instances(
         Filters=[
-            {"Name": "tag:Name", "Values": [f"{STACK_NAME}-instance"]},
+            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
             {"Name": "instance-state-name", "Values": ["running", "pending"]},
         ]
     )
@@ -51,7 +58,6 @@ def main():
 
 
 def is_ready(public_ip, app):
-
     process = subprocess.Popen(
         f"{MOONLIGHT_QT} list {public_ip}",
         shell=True,

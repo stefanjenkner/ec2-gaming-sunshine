@@ -1,29 +1,40 @@
 #!/usr/bin/env python
 
-import logging
+import argparse
 import http.client
+import logging
 import socket
 import ssl
+import sys
 
-import botocore
 import boto3
+import botocore
 
-STACK_NAME = "ec2-gaming-sunshine"
+DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
+
 
 def main():
+    parser = argparse.ArgumentParser(prog="update-ip", epilog="Update whitelisted IP")
+    parser.add_argument(
+        "--stack",
+        help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
+        default=DEFAULT_STACK_NAME,
+    )
+
+    args = parser.parse_args()
+    stack_name = args.stack
 
     logging.basicConfig(level=logging.INFO)
+    logging.info(f"Updating stack {stack_name}")
 
     client = boto3.client("cloudformation")
-
-    logging.info(f"Updating stack {STACK_NAME}")
 
     try:
         ip = get_ip()
         ip_cidr = f"{ip}/32"
         logging.info(f"Updating IP whitelisting to: {ip_cidr}")
         client.update_stack(
-            StackName=STACK_NAME,
+            StackName=stack_name,
             UsePreviousTemplate=True,
             Parameters=[
                 {"ParameterKey": "MyIp", "ParameterValue": ip_cidr},
@@ -35,8 +46,10 @@ def main():
     except botocore.exceptions.ClientError as error:
         if error.response["Error"]["Code"] == "ValidationError":
             logging.error(error.response["Error"]["Message"])
+            return 1
         else:
             raise error
+
 
 def get_ip():
     host = "ifconfig.me"
@@ -46,6 +59,7 @@ def get_ip():
     ip = response.read().decode("utf-8")
     conn.close()
     return ip
+
 
 class IPv4HTTPSConnection(http.client.HTTPSConnection):
     def connect(self):
@@ -58,4 +72,4 @@ class IPv4HTTPSConnection(http.client.HTTPSConnection):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

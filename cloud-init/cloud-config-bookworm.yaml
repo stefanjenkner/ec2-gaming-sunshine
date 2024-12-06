@@ -113,8 +113,8 @@ write_files:
     aws s3 cp s3://nvidia-gaming/linux/555.52.04-May2024-Cloud_Gaming-Linux-Guest-Drivers.zip .
     unzip *Cloud_Gaming-Linux-Guest-Drivers.zip -d nvidia-drivers
     rm -f *Cloud_Gaming-Linux-Guest-Drivers.zip
-    chmod +x ./nvidia-drivers/*Cloud_Gaming-Linux-Guest-Drivers/NVIDIA-Linux-x86_64*-grid.run
-    /bin/sh ./nvidia-drivers/*Cloud_Gaming-Linux-Guest-Drivers/NVIDIA-Linux-x86_64*-grid.run --dkms --tmpdir=/mnt --silent
+    chmod +x ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run
+    /bin/sh ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run --dkms --tmpdir=/mnt --silent
     rm -rf ./nvidia-drivers/
     kversion=$(linux-version list |sort |tail -n1)
     dkms autoinstall -k $kversion

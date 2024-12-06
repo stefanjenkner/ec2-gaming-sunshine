@@ -110,7 +110,7 @@ write_files:
     cd /mnt
     #aws s3 cp --recursive s3://nvidia-gaming/linux/latest/ .
     #aws s3 ls s3://nvidia-gaming/linux/ .
-    aws s3 cp s3://nvidia-gaming/linux/555.52.04-May2024-Cloud_Gaming-Linux-Guest-Drivers.zip .
+    aws s3 cp s3://nvidia-gaming/linux/555.58.02-June2024-Cloud_Gaming-Linux-Guest-Drivers.zip .
     unzip *Cloud_Gaming-Linux-Guest-Drivers.zip -d nvidia-drivers
     rm -f *Cloud_Gaming-Linux-Guest-Drivers.zip
     chmod +x ./nvidia-drivers/NVIDIA-Linux-x86_64*-grid.run

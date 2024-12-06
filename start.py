@@ -1,16 +1,28 @@
 #!/usr/bin/env python
 
+import argparse
+import sys
+
 import boto3
 
-STACK_NAME = "ec2-gaming-sunshine"
+DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
+
 
 def main():
+    parser = argparse.ArgumentParser(prog="start", epilog="Start EC2 instance")
+    parser.add_argument(
+        "--stack",
+        help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
+        default=DEFAULT_STACK_NAME,
+    )
+    args = parser.parse_args()
+    stack_name = args.stack
 
     client = boto3.client("ec2")
     ec2 = boto3.resource("ec2")
     response = client.describe_instances(
         Filters=[
-            {"Name": "tag:Name", "Values": [f"{STACK_NAME}-instance"]},
+            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
             {"Name": "instance-state-name", "Values": ["stopped"]},
         ]
     )
@@ -18,12 +30,12 @@ def main():
     reservations = response["Reservations"]
     if len(reservations) == 0:
         print("No stopped instances found, aborting.")
-        return
+        return 1
 
     instances = reservations[0]["Instances"]
     if len(instances) > 1:
         print("More than one instance found, aborting.")
-        return
+        return 1
 
     instance_id = instances[0]["InstanceId"]
     ec2_instance = ec2.Instance(instance_id)
@@ -33,4 +45,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

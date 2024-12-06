@@ -26,11 +26,11 @@ Show template:
 
 Deploying the CloudFormation stack the first time requires a keypair (in this case `ec2-gaming`) to exist:
 
-    ./deploy.py --keypair ec2-gaming
+    ./deploy.py --stack ec2-gaming-sunshine --keypair ec2-gaming
 
 When updating CloudFormation stack, passing parameters is not required and existing settings remain untouched:
 
-    ./deploy.py
+    ./deploy.py --stack ec2-gaming-sunshine
 
 Launch spot instance:
 
@@ -51,7 +51,7 @@ Launch on-demand instance with custom instance type:
 By default, access to the EC2 instance is restriced. To update the whitelisted IP address to the IP address of the
 caller:
 
-    ./update-ip.py
+    ./update-ip.py --stack ec2-gaming-sunshine
 
 ## Manual steps on first boot
 
@@ -59,9 +59,11 @@ caller:
 
 Login to the EC2 instance:
 
-    # for ubuntu (jammy) instances
+    ./connect-ssh.py --stack ec2-gaming-sunshine
+
+    # or: manually connect to Ubuntu (jammy) instances
     ssh ubuntu@<IP>
-    # for debian (bookworm) instances
+    # or: manually connect to Debian (bookworm) instances
     ssh admin@<IP>
 
 Wait for [cloud-init] to finish:

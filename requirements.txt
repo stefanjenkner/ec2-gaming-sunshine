@@ -12,5 +12,5 @@ PyYAML==6.0.2
 rsa==4.7.2
 ruff==0.8.2
 s3transfer==0.10.4
-six==1.16.0
+six==1.17.0
 urllib3==2.2.3

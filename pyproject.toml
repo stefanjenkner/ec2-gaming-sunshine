@@ -21,6 +21,9 @@ major_on_zero = false
 allow_zero_version = true
 no_git_verify = false
 tag_format = "{version}"
+post_commit_commands = [
+  "git tag -s -f {version} -m 'Release {version}'"
+]
 
 [tool.semantic_release.commit_author]
 env = "GIT_COMMIT_AUTHOR"

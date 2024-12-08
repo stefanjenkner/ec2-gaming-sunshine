@@ -23,3 +23,8 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.30.0
+    hooks:
+      - id: check-github-workflows
+      - id: check-dependabot

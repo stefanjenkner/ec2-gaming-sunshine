@@ -67,9 +67,16 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           changelog: false
+          push: false
           git_committer_name: "github-actions"
           git_committer_email: "actions@users.noreply.github.com"
+      - name: sign and push
+        if: steps.release.outputs.released == 'true'
+        run: |
+          git tag -s -f ${{ steps.release.outputs.tag }} -m 'Release ${{ steps.release.outputs.version }}'
+          git push --tags
       - uses: python-semantic-release/publish-action@v9
         if: steps.release.outputs.released == 'true'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.release.outputs.tag }}

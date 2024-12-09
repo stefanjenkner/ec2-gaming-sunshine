@@ -38,7 +38,9 @@ Launch spot instance:
 
 Launch on-demand instance:
 
-    # ubuntu jammy (22.04)
+    # ubuntu noble (24.04)
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-on-demand,Version=\$Latest
+    # or: ubuntu jammy (22.04)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
     # or: debian bookworm (12)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-bookworm-on-demand,Version=\$Latest

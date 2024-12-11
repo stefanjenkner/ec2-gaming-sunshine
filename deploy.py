@@ -19,7 +19,7 @@ INITIAL_WHITELISTED_IP = "127.0.0.1/32"
 def main():
     parser = argparse.ArgumentParser(prog="deploy", epilog="Create or update stack")
     parser.add_argument(
-        "--print-only", help="Print CF template but do not deploy", action="store_true"
+        "--print-only", help="Print CF templates but do not deploy", action="store_true"
     )
     parser.add_argument(
         "--keypair",
@@ -54,6 +54,16 @@ def main():
 
     if args.print_only:
         print(template.render(cloud_config=cloud_config, bucket_name=bucket_name))
+        for flavour in ["jammy", "bookworm", "noble"]:
+            file_name = f"launch-templates-{flavour}.yaml"
+            print("\n---")
+            with open(f"cloudformation/{file_name}") as cf_:
+                nested_stack_template = Template(cf_.read())
+                print(
+                    nested_stack_template.render(
+                        cloud_config=cloud_config, bucket_name=bucket_name
+                    )
+                )
         return 0
 
     logging.basicConfig(level=logging.INFO)

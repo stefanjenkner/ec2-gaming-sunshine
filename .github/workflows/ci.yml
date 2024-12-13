@@ -11,43 +11,28 @@ permissions:
   checks: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          cache: 'pip'
-      - name: install
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: build
-        run: |
-          mkdir -p dist
-          python deploy.py --print-only > dist/ec2-gaming-sunshine.template
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          if-no-files-found: error
   lint:
-    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           cache: 'pip'
-      - name: install
+      - name: install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: lint
+      - name: lint python
         run: |
           ruff check .
+      - name: lint SAM
+        run: |
+          sam lint --validate
+      - name: lint CloudFormation templates
+        run: |
+         cfn-lint cloudformation/*
   release:
-    needs: [build, lint]
+    needs: [lint]
     if: ${{ github.event_name != 'pull_request' }}
     concurrency: release
     permissions:
@@ -58,10 +43,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
       - uses: python-semantic-release/python-semantic-release@v9
         id: release
         with:
@@ -70,7 +51,3 @@ jobs:
           push: true
           git_committer_name: "github-actions"
           git_committer_email: "actions@users.noreply.github.com"
-      - uses: python-semantic-release/publish-action@v9
-        if: steps.release.outputs.released == 'true'
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}

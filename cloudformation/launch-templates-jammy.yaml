@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Parameters:
   ParentStackName:
@@ -60,8 +61,10 @@ Resources:
                 Value: 22.04
               - Key: Codename
                 Value: jammy
-        UserData: |
-          {{ cloud_config["jammy"] }}
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-jammy-userdata.yaml
 
   SpotLaunchTemplate:
     Type: "AWS::EC2::LaunchTemplate"
@@ -107,8 +110,10 @@ Resources:
                 Value: 22.04
               - Key: Codename
                 Value: jammy
-        UserData: |
-          {{ cloud_config["jammy"] }}
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-jammy-userdata.yaml
 
 Outputs:
   OnDemandLaunchTemplate:

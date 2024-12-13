@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Parameters:
   ParentStackName:
@@ -66,8 +67,10 @@ Resources:
                 Value: 12
               - Key: Codename
                 Value: bookworm
-        UserData: |
-          {{ cloud_config["bookworm"] }}
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-bookworm-userdata.yaml
 
   OnDemandLaunchTemplate:
     Type: "AWS::EC2::LaunchTemplate"
@@ -108,8 +111,10 @@ Resources:
                 Value: 12
               - Key: Codename
                 Value: bookworm
-        UserData: |
-          {{ cloud_config["bookworm"] }}
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-bookworm-userdata.yaml
 
 Outputs:
   OnDemandLaunchTemplate:

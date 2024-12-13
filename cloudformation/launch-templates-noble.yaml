@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Parameters:
   ParentStackName:
@@ -60,8 +61,11 @@ Resources:
                 Value: 24.04
               - Key: Codename
                 Value: noble
-        UserData: |
-          {{ cloud_config["noble"] }}
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-noble-userdata.yaml
+
 
   SpotLaunchTemplate:
     Type: "AWS::EC2::LaunchTemplate"
@@ -107,8 +111,10 @@ Resources:
                 Value: 24.04
               - Key: Codename
                 Value: noble
-        UserData: |
-          {{ cloud_config["noble"] }}
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-noble-userdata.yaml
 
 Outputs:
   OnDemandLaunchTemplate:

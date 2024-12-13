@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Parameters:
   MyIp:
@@ -173,9 +174,9 @@ Resources:
                 Resource: "arn:aws:ec2:*:*:instance/*"
 
   Bookworm:
-    Type: AWS::CloudFormation::Stack
+    Type: AWS::Serverless::Application
     Properties:
-      TemplateURL: https://s3.amazonaws.com/{{ bucket_name }}/launch-templates-bookworm.yaml
+      Location: ./launch-templates-bookworm.yaml
       Parameters:
         ParentStackName: !Ref AWS::StackName
         AdminAccessSg: !Ref AdminAccess
@@ -186,9 +187,9 @@ Resources:
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
 
   Jammy:
-    Type: AWS::CloudFormation::Stack
+    Type: AWS::Serverless::Application
     Properties:
-      TemplateURL: https://s3.amazonaws.com/{{ bucket_name }}/launch-templates-jammy.yaml
+      Location: ./launch-templates-jammy.yaml
       Parameters:
         ParentStackName: !Ref AWS::StackName
         AdminAccessSg: !Ref AdminAccess
@@ -199,9 +200,9 @@ Resources:
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
 
   Noble:
-    Type: AWS::CloudFormation::Stack
+    Type: AWS::Serverless::Application
     Properties:
-      TemplateURL: https://s3.amazonaws.com/{{ bucket_name }}/launch-templates-noble.yaml
+      Location: ./launch-templates-noble.yaml
       Parameters:
         ParentStackName: !Ref AWS::StackName
         AdminAccessSg: !Ref AdminAccess

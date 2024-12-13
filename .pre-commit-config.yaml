@@ -16,11 +16,11 @@ repos:
       - id: commitizen
         stages: [ commit-msg ]
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.15.0
+    rev: v0.16.0
     hooks:
       - id: markdownlint-cli2
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.2
+    rev: v0.8.3
     hooks:
       - id: ruff
       - id: ruff-format
@@ -30,7 +30,7 @@ repos:
       - id: check-github-workflows
       - id: check-dependabot
   - repo: https://github.com/aws-cloudformation/cfn-lint
-    rev: v1.20.2
+    rev: v1.22.1
     hooks:
       - id: cfn-lint
         files: cloudformation\/.*\.(yaml|yml)$

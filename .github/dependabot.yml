@@ -7,9 +7,10 @@ updates:
     groups:
       aws-sdk:
         patterns:
+          - "aws-saml-cli"
+          - "awscli"
           - "boto3"
           - "botocore"
-          - "awscli"
           - "s3transfer"
     commit-message:
       prefix: "chore"

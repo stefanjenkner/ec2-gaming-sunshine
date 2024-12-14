@@ -7,7 +7,7 @@ updates:
     groups:
       aws-sdk:
         patterns:
-          - "aws-saml-cli"
+          - "aws-sam-cli"
           - "awscli"
           - "boto3"
           - "botocore"

@@ -22,7 +22,6 @@ Parameters:
     Type: "String"
 
 Resources:
-
   SpotLaunchTemplate:
     Type: "AWS::EC2::LaunchTemplate"
     Properties:
@@ -71,7 +70,6 @@ Resources:
           Name: 'AWS::Include'
           Parameters:
             Location: launch-templates-bookworm-userdata.yaml
-
   OnDemandLaunchTemplate:
     Type: "AWS::EC2::LaunchTemplate"
     Properties:

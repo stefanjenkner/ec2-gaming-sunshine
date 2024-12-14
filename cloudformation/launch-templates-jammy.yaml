@@ -65,7 +65,6 @@ Resources:
           Name: 'AWS::Include'
           Parameters:
             Location: launch-templates-jammy-userdata.yaml
-
   SpotLaunchTemplate:
     Type: "AWS::EC2::LaunchTemplate"
     Properties:

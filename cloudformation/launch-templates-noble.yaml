@@ -65,8 +65,6 @@ Resources:
           Name: 'AWS::Include'
           Parameters:
             Location: launch-templates-noble-userdata.yaml
-
-
   SpotLaunchTemplate:
     Type: "AWS::EC2::LaunchTemplate"
     Properties:

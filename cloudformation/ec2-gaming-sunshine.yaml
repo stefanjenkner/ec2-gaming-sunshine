@@ -1,10 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::Serverless-2016-10-31
+Transform:
+  - 'AWS::LanguageExtensions'
+  - 'AWS::Serverless-2016-10-31'
 
 Parameters:
   MyIp:
     Description: Client IP address in CIDR notation
-    Type: String
+    Type: CommaDelimitedList
+    Default: "127.0.0.1/0"
   KeyPair:
     Description: EC2 Key Pair
     Type: "AWS::EC2::KeyPair::KeyName"
@@ -113,11 +116,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: !Ref MyIp
+          CidrIp: !Select [0, !Ref MyIp]
         - IpProtocol: tcp
           FromPort: 47990
           ToPort: 47990
-          CidrIp: !Ref MyIp
+          CidrIp: !Select [0, !Ref MyIp]
   GamingAccess:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -128,15 +131,15 @@ Resources:
         - IpProtocol: tcp
           FromPort: 47984
           ToPort: 47989
-          CidrIp: !Ref MyIp
+          CidrIp: !Select [0, !Ref MyIp]
         - IpProtocol: tcp
           FromPort: 48010
           ToPort: 48031
-          CidrIp: !Ref MyIp
+          CidrIp: !Select [0, !Ref MyIp]
         - IpProtocol: udp
           FromPort: 47998
           ToPort: 48015
-          CidrIp: !Ref MyIp
+          CidrIp: !Select [0, !Ref MyIp]
   RemotePlayAccess:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -172,7 +175,6 @@ Resources:
               - Effect: Allow
                 Action: ["ec2:StartInstances", "ec2:StopInstances"]
                 Resource: "arn:aws:ec2:*:*:instance/*"
-
   Bookworm:
     Type: AWS::Serverless::Application
     Properties:
@@ -185,7 +187,6 @@ Resources:
         Subnet1: !Ref Subnet1
         KeyPair: !Ref KeyPair
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
-
   Jammy:
     Type: AWS::Serverless::Application
     Properties:
@@ -198,7 +199,6 @@ Resources:
         Subnet1: !Ref Subnet1
         KeyPair: !Ref KeyPair
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
-
   Noble:
     Type: AWS::Serverless::Application
     Properties:

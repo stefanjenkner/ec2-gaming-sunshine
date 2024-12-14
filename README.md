@@ -29,7 +29,7 @@ Setup Python and install project dependencies:
 
 Deploying the CloudFormation stack the first time requires a keypair (in this case `ec2-gaming`) to exist:
 
-    sam deploy --stack-name ec2-gaming-sunshine --parameter-overrides KeyPair=ec2-gaming MyIp=127.0.0.1/0
+    sam deploy --stack-name ec2-gaming-sunshine --parameter-overrides KeyPair=ec2-gaming
 
 When updating CloudFormation stack, passing parameters is not required and existing settings remain untouched:
 

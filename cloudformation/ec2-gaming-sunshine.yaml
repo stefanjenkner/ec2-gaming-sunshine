@@ -1,18 +1,16 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - 'AWS::LanguageExtensions'
+  - 'AWS::Serverless-2016-10-31'
 
 Parameters:
   MyIp:
     Description: Client IP address in CIDR notation
     Type: String
+    Default: "127.0.0.1/32"
   KeyPair:
     Description: EC2 Key Pair
     Type: "AWS::EC2::KeyPair::KeyName"
-  LatestAmiIdJammy:
-    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
-    Default: "/aws/service/canonical/ubuntu/server/jammy/stable/current/amd64/hvm/ebs-gp2/ami-id"
-  LatestAmiIdBookworm:
-    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
-    Default: "/aws/service/debian/release/bookworm/latest/amd64"
 
 Resources:
   InstanceRole:
@@ -157,180 +155,6 @@ Resources:
           FromPort: 27036
           ToPort: 27037
           CidrIp: 0.0.0.0/0
-  LaunchTemplateBookwormSpot:
-    Type: "AWS::EC2::LaunchTemplate"
-    Properties:
-      LaunchTemplateName: !Sub "${AWS::StackName}-bookworm-spot"
-      LaunchTemplateData:
-        IamInstanceProfile:
-          Arn: !GetAtt InstanceProfile.Arn
-        NetworkInterfaces:
-          - DeviceIndex: 0
-            AssociatePublicIpAddress: true
-            DeleteOnTermination: true
-            SubnetId: !Ref Subnet1
-            Groups:
-              - !GetAtt AdminAccess.GroupId
-              - !GetAtt GamingAccess.GroupId
-              - !GetAtt RemotePlayAccess.GroupId
-        PrivateDnsNameOptions:
-          HostnameType: resource-name
-        BlockDeviceMappings:
-          - Ebs:
-              VolumeSize: 20
-              VolumeType: gp2
-              DeleteOnTermination: true
-              Encrypted: true
-            DeviceName: /dev/xvda
-        ImageId: !Ref LatestAmiIdBookworm
-        InstanceType: g4dn.xlarge
-        KeyName: !Ref KeyPair
-        InstanceMarketOptions:
-          MarketType: spot
-          SpotOptions:
-            InstanceInterruptionBehavior: stop
-            SpotInstanceType: persistent
-        TagSpecifications:
-          - ResourceType: instance
-            Tags:
-              - Key: Name
-                Value: !Sub "${AWS::StackName}-instance"
-              - Key: Distribution
-                Value: Debian
-              - Key: Release
-                Value: 12
-              - Key: Codename
-                Value: bookworm
-        UserData: |
-          {{ cloud_config["bookworm"] }}
-  LaunchTemplateBookwormOnDemand:
-    Type: "AWS::EC2::LaunchTemplate"
-    Properties:
-      LaunchTemplateName: !Sub "${AWS::StackName}-bookworm-on-demand"
-      LaunchTemplateData:
-        IamInstanceProfile:
-          Arn: !GetAtt InstanceProfile.Arn
-        NetworkInterfaces:
-          - DeviceIndex: 0
-            AssociatePublicIpAddress: true
-            DeleteOnTermination: true
-            SubnetId: !Ref Subnet1
-            Groups:
-              - !GetAtt AdminAccess.GroupId
-              - !GetAtt GamingAccess.GroupId
-              - !GetAtt RemotePlayAccess.GroupId
-        PrivateDnsNameOptions:
-          HostnameType: resource-name
-        BlockDeviceMappings:
-          - Ebs:
-              VolumeSize: 20
-              VolumeType: gp2
-              DeleteOnTermination: true
-              Encrypted: true
-            DeviceName: /dev/xvda
-        ImageId: !Ref LatestAmiIdBookworm
-        InstanceType: g4dn.xlarge
-        KeyName: !Ref KeyPair
-        TagSpecifications:
-          - ResourceType: instance
-            Tags:
-              - Key: Name
-                Value: !Sub "${AWS::StackName}-instance"
-              - Key: Distribution
-                Value: Debian
-              - Key: Release
-                Value: 12
-              - Key: Codename
-                Value: bookworm
-        UserData: |
-          {{ cloud_config["bookworm"] }}
-  LaunchTemplateJammySpot:
-    Type: "AWS::EC2::LaunchTemplate"
-    Properties:
-      LaunchTemplateName: !Sub "${AWS::StackName}-jammy-spot"
-      LaunchTemplateData:
-        IamInstanceProfile:
-          Arn: !GetAtt InstanceProfile.Arn
-        NetworkInterfaces:
-          - DeviceIndex: 0
-            AssociatePublicIpAddress: true
-            DeleteOnTermination: true
-            SubnetId: !Ref Subnet1
-            Groups:
-              - !GetAtt AdminAccess.GroupId
-              - !GetAtt GamingAccess.GroupId
-              - !GetAtt RemotePlayAccess.GroupId
-        PrivateDnsNameOptions:
-          HostnameType: resource-name
-        BlockDeviceMappings:
-          - Ebs:
-              VolumeSize: 20
-              VolumeType: gp2
-              DeleteOnTermination: true
-              Encrypted: true
-            DeviceName: /dev/sda1
-        ImageId: !Ref LatestAmiIdJammy
-        InstanceType: g4dn.xlarge
-        KeyName: !Ref KeyPair
-        InstanceMarketOptions:
-          MarketType: spot
-          SpotOptions:
-            InstanceInterruptionBehavior: stop
-            SpotInstanceType: persistent
-        TagSpecifications:
-          - ResourceType: instance
-            Tags:
-              - Key: Name
-                Value: !Sub "${AWS::StackName}-instance"
-              - Key: Distribution
-                Value: Ubuntu
-              - Key: Release
-                Value: 22.04
-              - Key: Codename
-                Value: jammy
-        UserData: |
-          {{ cloud_config["jammy"] }}
-  LaunchTemplateJammyOnDemand:
-    Type: "AWS::EC2::LaunchTemplate"
-    Properties:
-      LaunchTemplateName: !Sub "${AWS::StackName}-jammy-on-demand"
-      LaunchTemplateData:
-        IamInstanceProfile:
-          Arn: !GetAtt InstanceProfile.Arn
-        NetworkInterfaces:
-          - DeviceIndex: 0
-            AssociatePublicIpAddress: true
-            DeleteOnTermination: true
-            SubnetId: !Ref Subnet1
-            Groups:
-              - !GetAtt AdminAccess.GroupId
-              - !GetAtt GamingAccess.GroupId
-              - !GetAtt RemotePlayAccess.GroupId
-        PrivateDnsNameOptions:
-          HostnameType: resource-name
-        BlockDeviceMappings:
-          - Ebs:
-              VolumeSize: 20
-              VolumeType: gp2
-              DeleteOnTermination: true
-              Encrypted: true
-            DeviceName: /dev/sda1
-        ImageId: !Ref LatestAmiIdJammy
-        InstanceType: g4dn.xlarge
-        KeyName: !Ref KeyPair
-        TagSpecifications:
-          - ResourceType: instance
-            Tags:
-              - Key: Name
-                Value: !Sub "${AWS::StackName}-instance"
-              - Key: Distribution
-                Value: Ubuntu
-              - Key: Release
-                Value: 22.04
-              - Key: Codename
-                Value: jammy
-        UserData: |
-          {{ cloud_config["jammy"] }}
   LibraryBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -351,3 +175,70 @@ Resources:
               - Effect: Allow
                 Action: ["ec2:StartInstances", "ec2:StopInstances"]
                 Resource: "arn:aws:ec2:*:*:instance/*"
+  Bookworm:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./launch-templates-bookworm.yaml
+      Parameters:
+        ParentStackName: !Ref AWS::StackName
+        SecurityGroups:
+          Fn::Join:
+            - ","
+            - - !Ref AdminAccess
+              - !Ref GamingAccess
+              - !Ref RemotePlayAccess
+        Subnet: !Ref Subnet1
+        KeyPair: !Ref KeyPair
+        InstanceProfileArn: !GetAtt InstanceProfile.Arn
+  Jammy:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./launch-templates-jammy.yaml
+      Parameters:
+        ParentStackName: !Ref AWS::StackName
+        SecurityGroups:
+          Fn::Join:
+            - ","
+            - - !Ref AdminAccess
+              - !Ref GamingAccess
+              - !Ref RemotePlayAccess
+        Subnet: !Ref Subnet1
+        KeyPair: !Ref KeyPair
+        InstanceProfileArn: !GetAtt InstanceProfile.Arn
+  Noble:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./launch-templates-noble.yaml
+      Parameters:
+        ParentStackName: !Ref AWS::StackName
+        SecurityGroups:
+          Fn::Join:
+            - ","
+            - - !Ref AdminAccess
+              - !Ref GamingAccess
+              - !Ref RemotePlayAccess
+        Subnet: !Ref Subnet1
+        KeyPair: !Ref KeyPair
+        InstanceProfileArn: !GetAtt InstanceProfile.Arn
+
+Outputs:
+  OnDemandLaunchTemplateBookworm:
+    Description: On-demand instance launch template (Bookworm)
+    Value: !GetAtt Bookworm.Outputs.OnDemandLaunchTemplate
+  SpotLaunchTemplateBookworm:
+    Description: Spot instance launch template (Bookworm)
+    Value: !GetAtt Bookworm.Outputs.SpotLaunchTemplate
+  OnDemandLaunchTemplateJammy:
+    Description: On-demand instance launch template (Jammy)
+    Value: !GetAtt Jammy.Outputs.OnDemandLaunchTemplate
+  SpotLaunchTemplateJammy:
+    Description: Spot instance launch template (Jammy)
+    Value: !GetAtt Jammy.Outputs.SpotLaunchTemplate
+  OnDemandLaunchTemplateNoble:
+    Description: On-demand instance launch template (Noble)
+    Value: !GetAtt Noble.Outputs.OnDemandLaunchTemplate
+  SpotLaunchTemplateNoble:
+    Description: Spot instance launch template (Noble)
+    Value: !GetAtt Noble.Outputs.SpotLaunchTemplate
+
+# vim: ft=yaml.cloudformation

@@ -19,7 +19,7 @@ elif platform == "darwin":
 def main():
     parser = argparse.ArgumentParser(prog="connect-moonlight", epilog="Start streaming")
     parser.add_argument(
-        "--stack",
+        "--stack-name",
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
         default=DEFAULT_STACK_NAME,
     )
@@ -28,7 +28,7 @@ def main():
     )
 
     args = parser.parse_args()
-    stack_name = args.stack
+    stack_name = args.stack_name
 
     client = boto3.client("ec2")
     boto3.resource("ec2")

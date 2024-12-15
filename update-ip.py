@@ -16,13 +16,13 @@ DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
 def main():
     parser = argparse.ArgumentParser(prog="update-ip", epilog="Update whitelisted IP")
     parser.add_argument(
-        "--stack",
+        "--stack-name",
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
         default=DEFAULT_STACK_NAME,
     )
 
     args = parser.parse_args()
-    stack_name = args.stack
+    stack_name = args.stack_name
 
     logging.basicConfig(level=logging.INFO)
     logging.info(f"Updating stack {stack_name}")
@@ -40,7 +40,7 @@ def main():
                 {"ParameterKey": "MyIp", "ParameterValue": ip_cidr},
                 {"ParameterKey": "KeyPair", "UsePreviousValue": True},
             ],
-            Capabilities=["CAPABILITY_NAMED_IAM"],
+            Capabilities=["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"],
         )
 
     except botocore.exceptions.ClientError as error:

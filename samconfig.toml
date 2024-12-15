@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+template_file = "cloudformation/ec2-gaming-sunshine.yaml"
+stack_name = "ec2-gaming-sunshine"
+resolve_s3 = true
+capabilities = "CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
+
+[default.validate.parameters]
+template_file = "cloudformation/ec2-gaming-sunshine.yaml"
+
+[default.package.parameters]
+resolve_s3 = true
+template_file = "cloudformation/ec2-gaming-sunshine.yaml"

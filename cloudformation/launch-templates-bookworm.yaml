@@ -6,7 +6,7 @@ Parameters:
     Type: "String"
   SecurityGroups:
     Type: "List<AWS::EC2::SecurityGroup::Id>"
-  Subnet1:
+  Subnet:
     Type: "AWS::EC2::Subnet::Id"
   LatestAmi:
     Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
@@ -29,7 +29,7 @@ Resources:
           - DeviceIndex: 0
             AssociatePublicIpAddress: true
             DeleteOnTermination: true
-            SubnetId: !Ref Subnet1
+            SubnetId: !Ref Subnet
             Groups: !Ref SecurityGroups
         PrivateDnsNameOptions:
           HostnameType: resource-name
@@ -74,7 +74,7 @@ Resources:
           - DeviceIndex: 0
             AssociatePublicIpAddress: true
             DeleteOnTermination: true
-            SubnetId: !Ref Subnet1
+            SubnetId: !Ref Subnet
             Groups: !Ref SecurityGroups
         PrivateDnsNameOptions:
           HostnameType: resource-name

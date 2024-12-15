@@ -30,7 +30,7 @@ jobs:
           sam validate --lint
       - name: lint CloudFormation templates
         run: |
-         cfn-lint cloudformation/*
+          cfn-lint cloudformation/*
   release:
     needs: [lint]
     if: ${{ github.event_name != 'pull_request' }}

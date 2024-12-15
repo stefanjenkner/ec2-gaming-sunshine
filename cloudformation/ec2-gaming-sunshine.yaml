@@ -6,8 +6,8 @@ Transform:
 Parameters:
   MyIp:
     Description: Client IP address in CIDR notation
-    Type: CommaDelimitedList
-    Default: "127.0.0.1/0"
+    Type: String
+    Default: "127.0.0.1/32"
   KeyPair:
     Description: EC2 Key Pair
     Type: "AWS::EC2::KeyPair::KeyName"
@@ -112,74 +112,49 @@ Resources:
       GroupName: !Sub "${AWS::StackName}-admin"
       GroupDescription: Allow remote admin access
       VpcId: !Ref Vpc
-  AdminAccessIngress1:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref AdminAccess
-      IpProtocol: tcp
-      FromPort: 22
-      ToPort: 22
-      CidrIp: !Select [0, !Ref MyIp]
-  AdminAccessIngress2:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref AdminAccess
-      IpProtocol: tcp
-      FromPort: 47990
-      ToPort: 47990
-      CidrIp: !Select [0, !Ref MyIp]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIp
+        - IpProtocol: tcp
+          FromPort: 47990
+          ToPort: 47990
+          CidrIp: !Ref MyIp
   GamingAccess:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub "${AWS::StackName}-player"
       GroupDescription: Allow remote gaming access
       VpcId: !Ref Vpc
-  GamingAccessIngress1:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref GamingAccess
-      IpProtocol: tcp
-      FromPort: 47984
-      ToPort: 47989
-      CidrIp: !Select [0, !Ref MyIp]
-  GamingAccessIngress2:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref GamingAccess
-      IpProtocol: tcp
-      FromPort: 48010
-      ToPort: 48031
-      CidrIp: !Select [0, !Ref MyIp]
-  GamingAccessIngress3:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref GamingAccess
-      IpProtocol: udp
-      FromPort: 47998
-      ToPort: 48015
-      CidrIp: !Select [0, !Ref MyIp]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 47984
+          ToPort: 47989
+          CidrIp: !Ref MyIp
+        - IpProtocol: tcp
+          FromPort: 48010
+          ToPort: 48031
+          CidrIp: !Ref MyIp
+        - IpProtocol: udp
+          FromPort: 47998
+          ToPort: 48015
+          CidrIp: !Ref MyIp
   RemotePlayAccess:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub "${AWS::StackName}-remote-play"
       GroupDescription: Allow Steam Remote Play
       VpcId: !Ref Vpc
-  RemotePlayAccessIngress1:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref RemotePlayAccess
-      IpProtocol: udp
-      FromPort: 27031
-      ToPort: 27036
-      CidrIp: 0.0.0.0/0
-  RemotePlayAccessIngress2:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref RemotePlayAccess
-      IpProtocol: tcp
-      FromPort: 27036
-      ToPort: 27037
-      CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: udp
+          FromPort: 27031
+          ToPort: 27036
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 27036
+          ToPort: 27037
+          CidrIp: 0.0.0.0/0
   LibraryBucket:
     Type: AWS::S3::Bucket
     Properties:

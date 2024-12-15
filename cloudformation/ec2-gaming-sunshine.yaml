@@ -181,9 +181,12 @@ Resources:
       Location: ./launch-templates-bookworm.yaml
       Parameters:
         ParentStackName: !Ref AWS::StackName
-        AdminAccessSg: !Ref AdminAccess
-        GamingAccessSg: !Ref GamingAccess
-        RemotePlayAccessSg: !Ref RemotePlayAccess
+        SecurityGroups:
+          Fn::Join:
+            - ","
+            - - !Ref AdminAccess
+              - !Ref GamingAccess
+              - !Ref RemotePlayAccess
         Subnet1: !Ref Subnet1
         KeyPair: !Ref KeyPair
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
@@ -193,9 +196,12 @@ Resources:
       Location: ./launch-templates-jammy.yaml
       Parameters:
         ParentStackName: !Ref AWS::StackName
-        AdminAccessSg: !Ref AdminAccess
-        GamingAccessSg: !Ref GamingAccess
-        RemotePlayAccessSg: !Ref RemotePlayAccess
+        SecurityGroups:
+          Fn::Join:
+            - ","
+            - - !Ref AdminAccess
+              - !Ref GamingAccess
+              - !Ref RemotePlayAccess
         Subnet1: !Ref Subnet1
         KeyPair: !Ref KeyPair
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
@@ -205,9 +211,12 @@ Resources:
       Location: ./launch-templates-noble.yaml
       Parameters:
         ParentStackName: !Ref AWS::StackName
-        AdminAccessSg: !Ref AdminAccess
-        GamingAccessSg: !Ref GamingAccess
-        RemotePlayAccessSg: !Ref RemotePlayAccess
+        SecurityGroups:
+          Fn::Join:
+            - ","
+            - - !Ref AdminAccess
+              - !Ref GamingAccess
+              - !Ref RemotePlayAccess
         Subnet1: !Ref Subnet1
         KeyPair: !Ref KeyPair
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
@@ -231,3 +240,5 @@ Outputs:
   SpotLaunchTemplateNoble:
     Description: Spot instance launch template (Noble)
     Value: !GetAtt Noble.Outputs.SpotLaunchTemplate
+
+# vim: ft=yaml.cloudformation

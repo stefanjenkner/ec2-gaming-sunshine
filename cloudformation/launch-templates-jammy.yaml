@@ -4,12 +4,8 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   ParentStackName:
     Type: "String"
-  AdminAccessSg:
-    Type: "AWS::EC2::SecurityGroup::Id"
-  GamingAccessSg:
-    Type: "AWS::EC2::SecurityGroup::Id"
-  RemotePlayAccessSg:
-    Type: "AWS::EC2::SecurityGroup::Id"
+  SecurityGroups:
+    Type: "List<AWS::EC2::SecurityGroup::Id>"
   Subnet1:
     Type: "AWS::EC2::Subnet::Id"
   LatestAmi:
@@ -34,10 +30,7 @@ Resources:
           AssociatePublicIpAddress: true
           DeleteOnTermination: true
           SubnetId: !Ref Subnet1
-          Groups:
-          - !Ref AdminAccessSg
-          - !Ref GamingAccessSg
-          - !Ref RemotePlayAccessSg
+          Groups: !Ref SecurityGroups
         PrivateDnsNameOptions:
           HostnameType: resource-name
         BlockDeviceMappings:
@@ -77,10 +70,7 @@ Resources:
             AssociatePublicIpAddress: true
             DeleteOnTermination: true
             SubnetId: !Ref Subnet1
-            Groups:
-            - !Ref AdminAccessSg
-            - !Ref GamingAccessSg
-            - !Ref RemotePlayAccessSg
+            Groups: !Ref SecurityGroups
         PrivateDnsNameOptions:
           HostnameType: resource-name
         BlockDeviceMappings:
@@ -121,3 +111,5 @@ Outputs:
   SpotLaunchTemplate:
     Description: Spot instance launch template
     Value: !Ref SpotLaunchTemplate
+
+# vim: ft=yaml.cloudformation

@@ -10,7 +10,7 @@ pyasn1==0.6.1
 python-dateutil==2.9.0.post0
 PyYAML==6.0.2
 rsa==4.7.2
-ruff==0.8.2
+ruff==0.8.3
 s3transfer==0.10.4
 six==1.17.0
 urllib3==2.2.3

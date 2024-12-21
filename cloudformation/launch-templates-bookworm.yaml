@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  ParentStackName:
+    Type: "String"
+  SecurityGroups:
+    Type: "List<AWS::EC2::SecurityGroup::Id>"
+  Subnet:
+    Type: "AWS::EC2::Subnet::Id"
+  LatestAmi:
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: "/aws/service/debian/release/bookworm/latest/amd64"
+  KeyPair:
+    Description: EC2 Key Pair
+    Type: "AWS::EC2::KeyPair::KeyName"
+  InstanceProfileArn:
+    Type: "String"
+
+Resources:
+  SpotLaunchTemplate:
+    Type: "AWS::EC2::LaunchTemplate"
+    Properties:
+      LaunchTemplateName: !Sub "${ParentStackName}-bookworm-spot"
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn: !Ref InstanceProfileArn
+        NetworkInterfaces:
+          - DeviceIndex: 0
+            AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            SubnetId: !Ref Subnet
+            Groups: !Ref SecurityGroups
+        PrivateDnsNameOptions:
+          HostnameType: resource-name
+        BlockDeviceMappings:
+          - Ebs:
+              VolumeSize: 20
+              VolumeType: gp2
+              DeleteOnTermination: true
+              Encrypted: true
+            DeviceName: /dev/xvda
+        ImageId: !Ref LatestAmi
+        InstanceType: g4dn.xlarge
+        KeyName: !Ref KeyPair
+        InstanceMarketOptions:
+          MarketType: spot
+          SpotOptions:
+            InstanceInterruptionBehavior: stop
+            SpotInstanceType: persistent
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${ParentStackName}-instance"
+              - Key: Distribution
+                Value: Debian
+              - Key: Release
+                Value: 12
+              - Key: Codename
+                Value: bookworm
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-bookworm-userdata.yaml
+  OnDemandLaunchTemplate:
+    Type: "AWS::EC2::LaunchTemplate"
+    Properties:
+      LaunchTemplateName: !Sub "${ParentStackName}-bookworm-on-demand"
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn: !Ref InstanceProfileArn
+        NetworkInterfaces:
+          - DeviceIndex: 0
+            AssociatePublicIpAddress: true
+            DeleteOnTermination: true
+            SubnetId: !Ref Subnet
+            Groups: !Ref SecurityGroups
+        PrivateDnsNameOptions:
+          HostnameType: resource-name
+        BlockDeviceMappings:
+          - Ebs:
+              VolumeSize: 20
+              VolumeType: gp2
+              DeleteOnTermination: true
+              Encrypted: true
+            DeviceName: /dev/xvda
+        ImageId: !Ref LatestAmi
+        InstanceType: g4dn.xlarge
+        KeyName: !Ref KeyPair
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub "${ParentStackName}-instance"
+              - Key: Distribution
+                Value: Debian
+              - Key: Release
+                Value: 12
+              - Key: Codename
+                Value: bookworm
+        Fn::Transform:
+          Name: 'AWS::Include'
+          Parameters:
+            Location: launch-templates-bookworm-userdata.yaml
+
+Outputs:
+  OnDemandLaunchTemplate:
+    Description: On-demand instance launch template
+    Value: !Ref OnDemandLaunchTemplate
+  SpotLaunchTemplate:
+    Description: Spot instance launch template
+    Value: !Ref SpotLaunchTemplate
+
+# vim: ft=yaml.cloudformation

@@ -12,13 +12,13 @@ DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
 def main():
     parser = argparse.ArgumentParser(prog="connect-ssh", epilog="SSH into EC2 instance")
     parser.add_argument(
-        "--stack",
+        "--stack-name",
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
         default=DEFAULT_STACK_NAME,
     )
 
     args = parser.parse_args()
-    stack_name = args.stack
+    stack_name = args.stack_name
 
     client = boto3.client("ec2")
     boto3.resource("ec2")

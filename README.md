@@ -17,20 +17,23 @@ Stable features:
 Experimental features:
 
 * Debian Bookworm (without gamepad support at this time)
+* Ubuntu Linux 24.04 Noble (using ubuntu-drivers setup)
 
-## How-to
+## Prerequisites
 
-Show template:
+Setup Python and install project dependencies:
 
-    ./deploy.py --print-only
+    python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
+
+## How-to set up
 
 Deploying the CloudFormation stack the first time requires a keypair (in this case `ec2-gaming`) to exist:
 
-    ./deploy.py --stack ec2-gaming-sunshine --keypair ec2-gaming
+    sam deploy --stack-name ec2-gaming-sunshine --parameter-overrides KeyPair=ec2-gaming
 
 When updating CloudFormation stack, passing parameters is not required and existing settings remain untouched:
 
-    ./deploy.py --stack ec2-gaming-sunshine
+    sam deploy --stack-name ec2-gaming-sunshine
 
 Launch spot instance:
 
@@ -40,6 +43,8 @@ Launch on-demand instance:
 
     # ubuntu jammy (22.04)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
+    # or: ubuntu noble (24.04)
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-on-demand,Version=\$Latest
     # or: debian bookworm (12)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-bookworm-on-demand,Version=\$Latest
 
@@ -51,7 +56,13 @@ Launch on-demand instance with custom instance type:
 By default, access to the EC2 instance is restriced. To update the whitelisted IP address to the IP address of the
 caller:
 
-    ./update-ip.py --stack ec2-gaming-sunshine
+    ./update-ip.py --stack-name ec2-gaming-sunshine
+
+## How-to destroy
+
+To delete the entire CloudFormation stack:
+
+    sam delete --stack-name ec2-gaming-sunshine
 
 ## Manual steps on first boot
 
@@ -59,7 +70,7 @@ caller:
 
 Login to the EC2 instance:
 
-    ./connect-ssh.py --stack ec2-gaming-sunshine
+    ./connect-ssh.py --stack-name ec2-gaming-sunshine
 
     # or: manually connect to Ubuntu (jammy) instances
     ssh ubuntu@<IP>

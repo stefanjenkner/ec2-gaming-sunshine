@@ -140,6 +140,7 @@ UserData:
         WantedBy = multi-user.target
     - path: /home/ubuntu/.bash_history
       content: |
+        sudo loginctl unlock-sessions
         sudo reboot
         sudo /opt/install_nvidia_driver.sh
         tail  -f /var/log/cloud-init.log

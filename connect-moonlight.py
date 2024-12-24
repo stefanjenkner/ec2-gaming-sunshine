@@ -2,8 +2,9 @@
 
 import argparse
 import subprocess
-import sys
-from sys import platform
+from random import randint
+from sys import exit, platform
+from time import sleep
 
 import boto3
 
@@ -30,21 +31,7 @@ def main():
     args = parser.parse_args()
     stack_name = args.stack_name
 
-    client = boto3.client("ec2")
-    boto3.resource("ec2")
-    response = client.describe_instances(
-        Filters=[
-            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
-            {"Name": "instance-state-name", "Values": ["running", "pending"]},
-        ]
-    )
-    reservations = response["Reservations"]
-
-    if len(reservations) == 0:
-        print("No running instances found, aborting.")
-        return 1
-
-    instances = reservations[0]["Instances"]
+    instances = get_instances(stack_name)
     if len(instances) > 1:
         print("More than one instance found, aborting.")
         return 1
@@ -53,12 +40,52 @@ def main():
     print(f"Connecting to IP {public_ip}")
 
     if not is_ready(public_ip, args.app):
-        subprocess.run([MOONLIGHT_QT, "pair", "--pin", "0000", public_ip])
+        pin = f"{randint(0, 9999):04}"
+        command = f"https --ignore-stdin --verify=no -a sunshine:sunshine :47990/api/pin pin={pin}"
+        instance_id = instances[0]["InstanceId"]
+        moonlight = subprocess.Popen([MOONLIGHT_QT, "pair", "--pin", pin, public_ip])
+        sleep(3)
+        run_ssm_command(instance_id, command)
+        moonlight.wait()
 
     subprocess.run([MOONLIGHT_QT, "stream", public_ip, args.app])
 
 
-def is_ready(public_ip, app):
+def get_instances(stack_name: str):
+    ec2_client = boto3.client("ec2")
+    boto3.resource("ec2")
+    response = ec2_client.describe_instances(
+        Filters=[
+            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
+            {"Name": "instance-state-name", "Values": ["running", "pending"]},
+        ]
+    )
+    reservations = response["Reservations"]
+    if len(reservations) == 0:
+        print("No running instances found, aborting.")
+        return 1
+    return reservations[0]["Instances"]
+
+
+def run_ssm_command(instance_id: str, command: str):
+    ssm_client = boto3.client("ssm")
+    response = ssm_client.send_command(
+        InstanceIds=[instance_id],
+        DocumentName="AWS-RunShellScript",
+        Parameters={"commands": [command]},
+    )
+    command_id = response["Command"]["CommandId"]
+    while True:
+        sleep(1)
+        output = ssm_client.get_command_invocation(
+            CommandId=command_id, InstanceId=instance_id
+        )
+        if output["Status"] in ["Success", "Failed", "Cancelled"]:
+            break
+    print(output["StandardOutputContent"])
+
+
+def is_ready(public_ip: str, app: str):
     process = subprocess.Popen(
         f"{MOONLIGHT_QT} list {public_ip}",
         shell=True,
@@ -68,9 +95,8 @@ def is_ready(public_ip, app):
     output = process.stdout.readlines()
     print(output)
     retval = process.wait()
-    print(retval)
-    return retval == 0 and b"{app}\n" in output
+    return retval == 0 and bytes(f"{app}\n", "utf-8") in output
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit(main())

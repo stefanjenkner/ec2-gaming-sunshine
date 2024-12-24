@@ -29,6 +29,7 @@ Resources:
       Path: /
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+        - arn:aws:iam::aws:policy/AmazonSSMManagedEC2InstanceDefaultPolicy
       Policies:
         - PolicyName: !Sub "${AWS::StackName}-library-access"
           PolicyDocument:
@@ -116,10 +117,6 @@ Resources:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: !Ref MyIp
-        - IpProtocol: tcp
-          FromPort: 47990
-          ToPort: 47990
           CidrIp: !Ref MyIp
   GamingAccess:
     Type: AWS::EC2::SecurityGroup

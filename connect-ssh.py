@@ -16,6 +16,11 @@ def main():
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
         default=DEFAULT_STACK_NAME,
     )
+    parser.add_argument(
+        "--forward-web",
+        help="Forward Sunshine Webinterface to https://localhost:47990/",
+        action="store_true",
+    )
 
     args = parser.parse_args()
     stack_name = args.stack_name
@@ -46,10 +51,14 @@ def main():
     print(distribution)
     print(f"Connecting to IP {public_ip}")
 
+    subprocess_args = ["ssh"]
+    if args.forward_web:
+        subprocess_args.append("-L47990:localhost:47990")
     if distribution == "Ubuntu":
-        subprocess.run(["ssh", f"ubuntu@{public_ip}"])
+        subprocess_args.append(f"ubuntu@{public_ip}")
     elif distribution == "Debian":
-        subprocess.run(["ssh", f"admin@{public_ip}"])
+        subprocess_args.append(f"admin@{public_ip}")
+    subprocess.run(subprocess_args)
 
 
 if __name__ == "__main__":

@@ -89,25 +89,36 @@ Install NVIDIA gaming driver and reboot:
 
 ### Setup Sunshine
 
+Login to the EC2 instance:
+
+    ./connect-ssh.py --stack-name ec2-gaming-sunshine
+
 Configure username and password for sunshine API user:
 
     https --verify=no :47990/api/password newUsername="sunshine" newPassword="sunshine" confirmNewPassword="sunshine"
 
-Add apps for different screen resolutions:
+Adjust pre-defined applications to match the client's screen resolution:
+
+    # Desktop
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="Desktop" \
+        prep-cmd:='[{"do":"sh -c \"xrandr --output DVI-D-0 --mode \\\\\"${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT}\\\\\" --rate 60\"","undo":""},{"do":"loginctl unlock-session","undo":""}]' \
+        output="" cmd:=[] index:=0 detached:=[] image-path="desktop-alt.png"
+
+Optional: add applications for different screen resolutions:
 
     # 1280x720
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x720" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="1280x720" \
+        prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     # 1280x800
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x800" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="1280x800" \
+        prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     # 1920x1080
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1920x1080" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="1920x1080" \
+        prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
 Set a password for `sunshine` Linux user:

@@ -32,28 +32,32 @@ def main():
     stack_name = args.stack_name
 
     instances = get_instances(stack_name)
+    if len(instances) == 0:
+        print("No running instances found, aborting.")
+        return 1
     if len(instances) > 1:
         print("More than one instance found, aborting.")
         return 1
 
     public_ip = instances[0]["PublicIpAddress"]
+    instance_id = instances[0]["InstanceId"]
     print(f"Connecting to IP {public_ip}")
-
     if not is_ready(public_ip, args.app):
-        pin = f"{randint(0, 9999):04}"
-        command = f"https --ignore-stdin --verify=no -a sunshine:sunshine :47990/api/pin pin={pin}"
-        instance_id = instances[0]["InstanceId"]
-        moonlight = subprocess.Popen([MOONLIGHT_QT, "pair", "--pin", pin, public_ip])
-        sleep(3)
-        run_ssm_command(instance_id, command)
-        moonlight.wait()
-
+        pair(public_ip, instance_id)
     subprocess.run([MOONLIGHT_QT, "stream", public_ip, args.app])
+
+
+def pair(public_ip: str, instance_id: str):
+    pin = f"{randint(0, 9999):04}"
+    command = f"https --ignore-stdin --verify=no -a sunshine:sunshine :47990/api/pin pin={pin}"
+    moonlight = subprocess.Popen([MOONLIGHT_QT, "pair", "--pin", pin, public_ip])
+    sleep(3)
+    run_ssm_command(instance_id, command)
+    moonlight.wait()
 
 
 def get_instances(stack_name: str):
     ec2_client = boto3.client("ec2")
-    boto3.resource("ec2")
     response = ec2_client.describe_instances(
         Filters=[
             {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
@@ -61,10 +65,7 @@ def get_instances(stack_name: str):
         ]
     )
     reservations = response["Reservations"]
-    if len(reservations) == 0:
-        print("No running instances found, aborting.")
-        return 1
-    return reservations[0]["Instances"]
+    return reservations[0]["Instances"] if len(reservations) > 0 else []
 
 
 def run_ssm_command(instance_id: str, command: str):

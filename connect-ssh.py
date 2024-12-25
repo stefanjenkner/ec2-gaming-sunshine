@@ -45,19 +45,19 @@ def main():
         return 1
 
     public_ip = instances[0]["PublicIpAddress"]
-    distribution = list(
-        filter(lambda tag: tag["Key"] == "Distribution", instances[0]["Tags"])
-    )[0]["Value"]
-    print(distribution)
-    print(f"Connecting to IP {public_ip}")
+    tags = instances[0]["Tags"]
+    dist = list(filter(lambda tag: tag["Key"] == "Distribution", tags))[0]["Value"]
+    print(f"Connecting to EC2 instance ({dist}) IP {public_ip}")
 
     subprocess_args = ["ssh"]
     if args.forward_web:
         subprocess_args.append("-L47990:localhost:47990")
-    if distribution == "Ubuntu":
+    if dist == "Ubuntu":
         subprocess_args.append(f"ubuntu@{public_ip}")
-    elif distribution == "Debian":
+    elif dist == "Debian":
         subprocess_args.append(f"admin@{public_ip}")
+    else:
+        subprocess_args.append(public_ip)
     subprocess.run(subprocess_args)
 
 

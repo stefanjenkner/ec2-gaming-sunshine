@@ -9,7 +9,7 @@ from time import sleep
 import boto3
 
 DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
-DEFAULT_APP = "Low Res Desktop"
+DEFAULT_APP = "Desktop"
 
 if platform == "linux" or platform == "linux2":
     MOONLIGHT_QT = "moonlight-qt"

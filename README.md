@@ -87,7 +87,7 @@ Install NVIDIA gaming driver and reboot:
 
     sudo reboot
 
-### Setup Sunshine
+### Set up Sunshine
 
 Login to the EC2 instance:
 
@@ -125,6 +125,18 @@ Set a password for `sunshine` Linux user:
 
     sudo passwd sunshine
 
+## Connect Moonlight client automatically (macOS and Linux clients only)
+
+Connect and pair [Moonlight] automatically:
+
+    ./connect-moonlight.py --stack-name ec2-gaming-sunshine
+
+## Connect Moonlight client manually
+
+Login to the EC2 instance:
+
+    ./connect-ssh.py --stack-name ec2-gaming-sunshine
+
 Determine the public IPv4 address and connect via the [Moonlight] client:
 
     cloud-init query ds.meta_data.public_ipv4
@@ -132,6 +144,8 @@ Determine the public IPv4 address and connect via the [Moonlight] client:
 Allow connection by entering the PIN:
 
     https --verify=no -a sunshine:sunshine :47990/api/pin pin="0000"
+
+## Launch Steam
 
 Launch Steam, Login for the first time and:
 

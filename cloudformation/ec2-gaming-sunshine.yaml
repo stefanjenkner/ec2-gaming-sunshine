@@ -52,17 +52,6 @@ Resources:
               - Effect: Allow
                 Action: "s3:*Object"
                 Resource: !Join ["/", [!GetAtt LibraryBucket.Arn, "*"]]
-        - PolicyName: !Sub "${AWS::StackName}-dns-update"
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "ec2:DescribeInstances"
-                  - "ec2:DescribeTags"
-                  - "route53:ListHostedZones"
-                  - "route53:ChangeResourceRecordSets"
-                Resource: "*"
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -252,7 +241,7 @@ Resources:
       FunctionName: !Sub "${AWS::StackName}-on-instance-start"
       CodeUri: ../src/
       Handler: on_ec2_start_function.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       Timeout: 15
       Events:
         EC2InstanceStartEvent:
@@ -266,20 +255,40 @@ Resources:
       Environment:
         Variables:
           HOSTED_ZONE_ID: !Ref HostedZone
+      Role: !GetAtt OnInstanceStartStopLambdaRole.Arn
+  OnInstanceStartStopLambdaRole:
+    Type: AWS::IAM::Role
+    Condition: ShouldCreateHostedZone
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-on-start-stop-lambda-role"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - ec2:DescribeInstances
-                - ec2:DescribeTags
-                - route53:ListHostedZones
-              Resource: "*"
-        - Statement:
-            - Effect: Allow
-              Action:
-                - route53:ChangeResourceRecordSets
-                - route53:GetHostedZone
-              Resource: !Join ["/", ["arn:aws:route53:::hostedzone", !Ref HostedZone]]
+        - PolicyName: !Sub "${AWS::StackName}-update-hosted-zone"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:DescribeTags
+                  - route53:ListHostedZones
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - route53:ChangeResourceRecordSets
+                  - route53:GetHostedZone
+                Resource: !Join ["/", ["arn:aws:route53:::hostedzone", !Ref HostedZone]]
 
 
 Outputs:

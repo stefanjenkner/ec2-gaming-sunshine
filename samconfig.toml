@@ -12,3 +12,6 @@ template_file = "cloudformation/ec2-gaming-sunshine.yaml"
 [default.package.parameters]
 resolve_s3 = true
 template_file = "cloudformation/ec2-gaming-sunshine.yaml"
+
+[default.build.parameters]
+template_file = "cloudformation/ec2-gaming-sunshine.yaml"

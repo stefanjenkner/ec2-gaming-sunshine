@@ -11,6 +11,17 @@ Parameters:
   KeyPair:
     Description: EC2 Key Pair
     Type: "AWS::EC2::KeyPair::KeyName"
+  HostedZoneName:
+    Description: "Optional hosted zone name (e.g.: play.example.com). Leave empty to skip creation."
+    Type: String
+    Default: ""
+
+Conditions:
+  ShouldCreateHostedZone:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref HostedZoneName
+          - ""
 
 Resources:
   InstanceRole:
@@ -41,6 +52,17 @@ Resources:
               - Effect: Allow
                 Action: "s3:*Object"
                 Resource: !Join ["/", [!GetAtt LibraryBucket.Arn, "*"]]
+        - PolicyName: !Sub "${AWS::StackName}-dns-update"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeTags"
+                  - "route53:ListHostedZones"
+                  - "route53:ChangeResourceRecordSets"
+                Resource: "*"
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -217,6 +239,48 @@ Resources:
         Subnet: !Ref Subnet1
         KeyPair: !Ref KeyPair
         InstanceProfileArn: !GetAtt InstanceProfile.Arn
+
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Condition: ShouldCreateHostedZone
+    Properties:
+      Name: !Ref HostedZoneName
+  OnEc2InstanceStartFunction:
+    Type: AWS::Serverless::Function
+    Condition: ShouldCreateHostedZone
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-on-instance-start"
+      CodeUri: ../src/
+      Handler: on_ec2_start_function.lambda_handler
+      Runtime: python3.9
+      Timeout: 15
+      Events:
+        EC2InstanceStartEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source: [aws.ec2]
+              detail-type: [EC2 Instance State-change Notification]
+              detail:
+                state: [running]
+      Environment:
+        Variables:
+          HOSTED_ZONE_ID: !Ref HostedZone
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ec2:DescribeInstances
+                - ec2:DescribeTags
+                - route53:ListHostedZones
+              Resource: "*"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - route53:ChangeResourceRecordSets
+                - route53:GetHostedZone
+              Resource: !Join ["/", ["arn:aws:route53:::hostedzone", !Ref HostedZone]]
+
 
 Outputs:
   OnDemandLaunchTemplateBookworm:

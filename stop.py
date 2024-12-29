@@ -27,9 +27,10 @@ def main():
         print("More than one instance found, aborting.")
         return 1
 
+    ec2 = boto3.resource("ec2")
     for instance in instances:
         instance_id = instance["InstanceId"]
-        ec2_instance = ec2_client.Instance(instance_id)
+        ec2_instance = ec2.Instance(instance_id)
         print(f"Stopping {instance_id}")
         response = ec2_instance.stop()
         print(response)

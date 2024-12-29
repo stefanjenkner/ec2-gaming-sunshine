@@ -234,28 +234,6 @@ Resources:
     Condition: ShouldCreateHostedZone
     Properties:
       Name: !Ref HostedZoneName
-  OnEc2InstanceStartFunction:
-    Type: AWS::Serverless::Function
-    Condition: ShouldCreateHostedZone
-    Properties:
-      FunctionName: !Sub "${AWS::StackName}-on-instance-start"
-      CodeUri: ../src/
-      Handler: on_ec2_start_function.lambda_handler
-      Runtime: python3.13
-      Timeout: 15
-      Events:
-        EC2InstanceStartEvent:
-          Type: EventBridgeRule
-          Properties:
-            Pattern:
-              source: [aws.ec2]
-              detail-type: [EC2 Instance State-change Notification]
-              detail:
-                state: [running]
-      Environment:
-        Variables:
-          HOSTED_ZONE_ID: !Ref HostedZone
-      Role: !GetAtt OnInstanceStartStopLambdaRole.Arn
   OnInstanceStartStopLambdaRole:
     Type: AWS::IAM::Role
     Condition: ShouldCreateHostedZone
@@ -288,8 +266,52 @@ Resources:
                 Action:
                   - route53:ChangeResourceRecordSets
                   - route53:GetHostedZone
+                  - route53:ListResourceRecordSets
                 Resource: !Join ["/", ["arn:aws:route53:::hostedzone", !Ref HostedZone]]
-
+  OnEc2InstanceStartFunction:
+    Type: AWS::Serverless::Function
+    Condition: ShouldCreateHostedZone
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-on-instance-start"
+      CodeUri: ../src/
+      Handler: on_ec2_start_stop_function.on_start_lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      Events:
+        EC2InstanceStartEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source: [aws.ec2]
+              detail-type: [EC2 Instance State-change Notification]
+              detail:
+                state: [running]
+      Environment:
+        Variables:
+          HOSTED_ZONE_ID: !Ref HostedZone
+      Role: !GetAtt OnInstanceStartStopLambdaRole.Arn
+  OnEc2InstanceStopFunction:
+    Type: AWS::Serverless::Function
+    Condition: ShouldCreateHostedZone
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-on-instance-stop"
+      CodeUri: ../src/
+      Handler: on_ec2_start_stop_function.on_stop_lambda_handler
+      Runtime: python3.13
+      Timeout: 15
+      Events:
+        EC2InstanceStopEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source: [aws.ec2]
+              detail-type: [EC2 Instance State-change Notification]
+              detail:
+                state: [stopped]
+      Environment:
+        Variables:
+          HOSTED_ZONE_ID: !Ref HostedZone
+      Role: !GetAtt OnInstanceStartStopLambdaRole.Arn
 
 Outputs:
   OnDemandLaunchTemplateBookworm:

@@ -31,11 +31,12 @@ def main():
     args = parser.parse_args()
     stack_name = args.stack_name
 
-    instances = get_instances(stack_name)
+    ec2_client = boto3.client("ec2")
+    instances = get_instances(ec2_client, stack_name)
     if len(instances) == 0:
         print("No running instances found, aborting.")
         return 1
-    if len(instances) > 1:
+    elif len(instances) > 1:
         print("More than one instance found, aborting.")
         return 1
 
@@ -56,8 +57,7 @@ def pair(public_ip: str, instance_id: str):
     moonlight.wait()
 
 
-def get_instances(stack_name: str):
-    ec2_client = boto3.client("ec2")
+def get_instances(ec2_client, stack_name: str):
     response = ec2_client.describe_instances(
         Filters=[
             {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},

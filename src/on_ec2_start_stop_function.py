@@ -6,43 +6,30 @@ import boto3
 
 def on_start_lambda_handler(event, context):
     instance_id = event["detail"]["instance-id"]
-
     public_ip = get_public_ip(instance_id)
-
-    route53_client = boto3.client("route53")
     hosted_zone_id = os.environ.get("HOSTED_ZONE_ID")
-    hosted_zone_name = get_hosted_zone_name(route53_client, hosted_zone_id)
-    fqdn = f"{instance_id}.{hosted_zone_name}"
-    update_route53_record(route53_client, public_ip, hosted_zone_id, fqdn)
-
+    update_route53_records(hosted_zone_id, instance_id, public_ip)
     return {
         "statusCode": 200,
         "body": json.dumps(
-            f"EC2 instance {instance_id} started, DNS record {fqdn} updated to {public_ip}."
+            f"EC2 instance {instance_id} started, DNS records updated to {public_ip}."
         ),
     }
 
 
 def on_stop_lambda_handler(event, context):
     instance_id = event["detail"]["instance-id"]
-
-    route53_client = boto3.client("route53")
     hosted_zone_id = os.environ.get("HOSTED_ZONE_ID")
-    hosted_zone_name = get_hosted_zone_name(route53_client, hosted_zone_id)
-    fqdn = f"{instance_id}.{hosted_zone_name}"
-    delete_route53_record(route53_client, hosted_zone_id, fqdn)
-
+    delete_route53_records(hosted_zone_id, instance_id)
     return {
         "statusCode": 200,
-        "body": json.dumps(
-            f"EC2 instance {instance_id} stopped, DNS record {fqdn} deleted."
-        ),
+        "body": json.dumps(f"EC2 instance {instance_id} stopped, DNS records deleted."),
     }
 
 
 def get_public_ip(instance_id):
-    ec2_client = boto3.client("ec2")
-    response = ec2_client.describe_instances(InstanceIds=[instance_id])
+    client = boto3.client("ec2")
+    response = client.describe_instances(InstanceIds=[instance_id])
     reservations = response["Reservations"]
     for reservation in reservations:
         for instance in reservation["Instances"]:
@@ -52,50 +39,66 @@ def get_public_ip(instance_id):
     return None
 
 
-def get_hosted_zone_name(route53_client, hosted_zone_id):
-    response = route53_client.get_hosted_zone(Id=hosted_zone_id)
-    return response["HostedZone"]["Name"]
-
-
-def update_route53_record(route53_client, ip_address, hosted_zone_id, domain_name):
-    response = route53_client.change_resource_record_sets(
+def update_route53_records(hosted_zone_id, instance_id, ip_address):
+    client = boto3.client("route53")
+    hosted_zone_name = client.get_hosted_zone(Id=hosted_zone_id)["HostedZone"]["Name"]
+    response = client.change_resource_record_sets(
         HostedZoneId=hosted_zone_id,
         ChangeBatch={
             "Changes": [
                 {
                     "Action": "UPSERT",
                     "ResourceRecordSet": {
-                        "Name": domain_name,
+                        "Name": f"{instance_id}.{hosted_zone_name}",
                         "Type": "A",
                         "TTL": 300,
                         "ResourceRecords": [{"Value": ip_address}],
                     },
-                }
+                },
+                {
+                    "Action": "UPSERT",
+                    "ResourceRecordSet": {
+                        "Name": f"p{instance_id}.{hosted_zone_name}",
+                        "Type": "AAAA",
+                        "TTL": 300,
+                        "ResourceRecords": [{"Value": f"::ffff:{ip_address}"}],
+                    },
+                },
             ]
         },
     )
     return response
 
 
-def delete_route53_record(route53_client, hosted_zone_id, domain_name):
-    record_sets = route53_client.list_resource_record_sets(
-        HostedZoneId=hosted_zone_id,
-        StartRecordName=domain_name,
-        StartRecordType="A",
-        MaxItems="10",
+def delete_route53_records(hosted_zone_id, instance_id):
+    client = boto3.client("route53")
+    hosted_zone_name = client.get_hosted_zone(Id=hosted_zone_id)["HostedZone"]["Name"]
+
+    delete_route53_record_if_exists(
+        client, hosted_zone_id, f"{instance_id}.{hosted_zone_name}", "A"
+    )
+    delete_route53_record_if_exists(
+        client, hosted_zone_id, f"p{instance_id}.{hosted_zone_name}", "AAAA"
     )
 
+
+def delete_route53_record_if_exists(client, hosted_zone_id, record_name, record_type):
+    record_sets = client.list_resource_record_sets(
+        HostedZoneId=hosted_zone_id,
+        StartRecordName=record_name,
+        StartRecordType=record_type,
+        MaxItems="10",
+    )
     target_record = next(
         (
             record
             for record in record_sets["ResourceRecordSets"]
-            if record["Name"] == domain_name and record["Type"] == "A"
+            if record["Name"] == record_name and record["Type"] == record_type
         ),
         None,
     )
-
     if target_record:
-        route53_client.change_resource_record_sets(
+        client.change_resource_record_sets(
             HostedZoneId=hosted_zone_id,
             ChangeBatch={
                 "Changes": [{"Action": "DELETE", "ResourceRecordSet": target_record}]

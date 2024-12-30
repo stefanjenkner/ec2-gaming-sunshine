@@ -268,6 +268,12 @@ Resources:
                   - route53:GetHostedZone
                   - route53:ListResourceRecordSets
                 Resource: !Join ["/", ["arn:aws:route53:::hostedzone", !Ref HostedZone]]
+  OnInstanceStartStopLogGroup:
+    Type: AWS::Logs::LogGroup
+    Condition: ShouldCreateHostedZone
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-on-instance-start-stop"
+      RetentionInDays: 1
   OnEc2InstanceStartFunction:
     Type: AWS::Serverless::Function
     Condition: ShouldCreateHostedZone
@@ -276,6 +282,7 @@ Resources:
       CodeUri: ../src/
       Handler: on_ec2_start_stop_function.on_start_lambda_handler
       Runtime: python3.13
+      Architectures: [arm64]
       Timeout: 15
       Events:
         EC2InstanceStartEvent:
@@ -290,6 +297,8 @@ Resources:
         Variables:
           HOSTED_ZONE_ID: !Ref HostedZone
       Role: !GetAtt OnInstanceStartStopLambdaRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref OnInstanceStartStopLogGroup
   OnEc2InstanceStopFunction:
     Type: AWS::Serverless::Function
     Condition: ShouldCreateHostedZone
@@ -298,6 +307,7 @@ Resources:
       CodeUri: ../src/
       Handler: on_ec2_start_stop_function.on_stop_lambda_handler
       Runtime: python3.13
+      Architectures: [arm64]
       Timeout: 15
       Events:
         EC2InstanceStopEvent:
@@ -312,6 +322,8 @@ Resources:
         Variables:
           HOSTED_ZONE_ID: !Ref HostedZone
       Role: !GetAtt OnInstanceStartStopLambdaRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref OnInstanceStartStopLogGroup
 
 Outputs:
   OnDemandLaunchTemplateBookworm:

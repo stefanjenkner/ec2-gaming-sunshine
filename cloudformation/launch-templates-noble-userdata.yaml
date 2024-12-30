@@ -147,7 +147,7 @@ UserData:
     - path: /etc/profile.d/restic.sh
       content: |
         #!/bin/sh
-        REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep -oP '(?<="region" : ")[^"]*')
+        REGION=$(cloud-init query region)
         export RESTIC_REPOSITORY=s3:https://s3.${REGION}.amazonaws.com/ec2-gaming-sunshine-library
         export RESTIC_PASSWORD=sunshine
       permissions: '0644'

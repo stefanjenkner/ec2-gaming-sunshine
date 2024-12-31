@@ -25,6 +25,12 @@ jobs:
       - name: lint python code
         run: |
           ruff check .
+      - name: run tests with coverage
+        run: |
+          coverage run -source=src -m unittest discover tests
+      - name: generate coverage report
+        run: |
+          coverage report -m
       - name: validate AWS SAM Template
         run: |
           sam validate --lint

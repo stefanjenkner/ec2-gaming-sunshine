@@ -1,5 +1,16 @@
 NOTES.md
+
+# virtual environment
 venv/
+
+# packaging
 dist/
-ec2-gaming-sunshine.template
+
+# cached compiled bytecode
+__pycache__/
+
+# SAM artifacts and files used for local testing
 .aws-sam/
+
+# unit test coverage report
+.coverage

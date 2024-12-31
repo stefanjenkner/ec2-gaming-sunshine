@@ -148,7 +148,8 @@ UserData:
       content: |
         #!/bin/sh
         REGION=$(cloud-init query region)
-        export RESTIC_REPOSITORY=s3:https://s3.${REGION}.amazonaws.com/ec2-gaming-sunshine-library
+        STACK_NAME=ec2-gaming-sunshine
+        export RESTIC_REPOSITORY=s3:https://s3.${REGION}.amazonaws.com/${STACK_NAME}-library
         export RESTIC_PASSWORD=sunshine
       permissions: '0644'
     - path: /usr/local/bin/backup

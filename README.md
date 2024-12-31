@@ -101,7 +101,7 @@ Adjust pre-defined applications to match the client's screen resolution:
 
     # Desktop
     https --verify=no -a sunshine:sunshine :47990/api/apps name="Desktop" \
-        prep-cmd:='[{"do":"sh -c \"xrandr --output DVI-D-0 --mode \\\\\"${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT}\\\\\" --rate 60\"","undo":""},{"do":"loginctl unlock-session","undo":""}]' \
+        prep-cmd:='[{"do":"bash -c \"xrandr --output DVI-D-0 --mode \\\"${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT}\\\" --rate 60\"","undo":""},{"do":"loginctl unlock-session","undo":""}]' \
         output="" cmd:=[] index:=0 detached:=[] image-path="desktop-alt.png"
 
 Optional: add applications for different screen resolutions:

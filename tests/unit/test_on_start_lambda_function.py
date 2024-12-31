@@ -17,8 +17,22 @@ class TestOnStartLambdaHandler(unittest.TestCase):
 
     @mock_aws
     def test_on_start_lambda_handler(self):
-        with patch("boto3.client") as _mock_client:
+        with patch("boto3.client") as mock_client:
             # setup
+            mock_ec2_client = mock_client.return_value
+            mock_ec2_client.describe_instances.return_value = {
+                "Reservations": [
+                    {
+                        "Instances": [
+                            {
+                                "InstanceId": "i-aad04ef2c2abadd94",
+                                "PublicIpAddress": "9.8.7.6",
+                                "State": {"Name": "running"},
+                            }
+                        ]
+                    }
+                ]
+            }
             event = {
                 "detail": {"instance-id": "i-aad04ef2c2abadd94", "state": "running"}
             }

@@ -12,5 +12,6 @@ __pycache__/
 # SAM artifacts and files used for local testing
 .aws-sam/
 
-# unit test coverage report
+# unit test coverage report and linter cache
 .coverage
+.ruff_cache/

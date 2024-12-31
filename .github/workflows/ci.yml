@@ -27,7 +27,7 @@ jobs:
           ruff check .
       - name: run tests with coverage
         run: |
-          coverage run -source=src -m unittest discover tests
+          coverage run --source=src -m unittest discover tests
       - name: generate coverage report
         run: |
           coverage report -m

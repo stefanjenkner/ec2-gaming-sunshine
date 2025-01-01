@@ -5,6 +5,7 @@ import subprocess
 from random import randint
 from sys import exit, platform
 from time import sleep
+from typing import List
 
 import boto3
 
@@ -27,25 +28,38 @@ def main():
     parser.add_argument(
         "--app", help=f"App to stream, defaults to '{DEFAULT_APP}'", default=DEFAULT_APP
     )
+    parser.add_argument(
+        "instance_id",
+        nargs="?",
+        help="ID of the EC2 instance to connect to, optional if only one running instance",
+    )
 
     args = parser.parse_args()
     stack_name = args.stack_name
 
-    ec2_client = boto3.client("ec2")
-    instances = get_instances(ec2_client, stack_name)
+    instances = get_instances(stack_name)
+    instance_ids = [instance["InstanceId"] for instance in instances]
     if len(instances) == 0:
         print("No running instances found, aborting.")
         return 1
-    elif len(instances) > 1:
-        print("More than one instance found, aborting.")
+    elif len(instances) > 1 and args.instance_id is None:
+        print(f"More than one instance found: {instance_ids}, aborting.")
+        return 1
+    elif args.instance_id is not None and args.instance_id not in instance_ids:
+        print("Specified instance not found, aborting.")
         return 1
 
-    public_ip = instances[0]["PublicIpAddress"]
-    instance_id = instances[0]["InstanceId"]
-    print(f"Connecting to IP {public_ip}")
-    if not is_ready(public_ip, args.app):
+    instance_id = args.instance_id or instances[0]["InstanceId"]
+    instance = next(filter(lambda i: i["InstanceId"] == instance_id, instances))
+    public_ip = instance["PublicIpAddress"]
+    connect_moonlight(instance_id, public_ip, args.app)
+
+
+def connect_moonlight(instance_id: str, public_ip: str, app: str):
+    print(f"Connecting to EC2 instance {instance_id} using IP {public_ip}")
+    if not is_ready(public_ip, app):
         pair(public_ip, instance_id)
-    subprocess.run([MOONLIGHT_QT, "stream", public_ip, args.app])
+    subprocess.run([MOONLIGHT_QT, "stream", public_ip, app])
 
 
 def pair(public_ip: str, instance_id: str):
@@ -57,15 +71,19 @@ def pair(public_ip: str, instance_id: str):
     moonlight.wait()
 
 
-def get_instances(ec2_client, stack_name: str):
+def get_instances(stack_name: str) -> List[dict]:
+    ec2_client = boto3.client("ec2")
     response = ec2_client.describe_instances(
         Filters=[
             {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
             {"Name": "instance-state-name", "Values": ["running", "pending"]},
         ]
     )
-    reservations = response["Reservations"]
-    return reservations[0]["Instances"] if len(reservations) > 0 else []
+    return [
+        instance
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
 
 
 def run_ssm_command(instance_id: str, command: str):

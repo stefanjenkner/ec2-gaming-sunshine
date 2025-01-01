@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+from typing import List
 
 import boto3
 
@@ -15,36 +16,51 @@ def main():
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
         default=DEFAULT_STACK_NAME,
     )
+    parser.add_argument(
+        "instance_id",
+        nargs="?",
+        help="ID of the EC2 instance to stop, optional if only one running instance",
+    )
     args = parser.parse_args()
     stack_name = args.stack_name
 
-    ec2_client = boto3.client("ec2")
-    instances = get_instances(ec2_client, stack_name)
+    instances = get_instances(stack_name)
+    instance_ids = [instance["InstanceId"] for instance in instances]
     if len(instances) == 0:
         print("No running instances found, aborting.")
         return 1
-    elif len(instances) > 1:
-        print("More than one instance found, aborting.")
+    elif len(instances) > 1 and args.instance_id is None:
+        print(f"More than one instance found: {instance_ids}, aborting.")
+        return 1
+    elif args.instance_id is not None and args.instance_id not in instance_ids:
+        print("Specified instance not found, aborting.")
         return 1
 
+    instance_id = args.instance_id or instances[0]["InstanceId"]
+    stop_instance(instance_id)
+
+
+def stop_instance(instance_id: str):
     ec2 = boto3.resource("ec2")
-    for instance in instances:
-        instance_id = instance["InstanceId"]
-        ec2_instance = ec2.Instance(instance_id)
-        print(f"Stopping {instance_id}")
-        response = ec2_instance.stop()
-        print(response)
+    ec2_instance = ec2.Instance(instance_id)
+    print(f"Stopping {instance_id}")
+    response = ec2_instance.stop()
+    print(response)
 
 
-def get_instances(ec2_client, stack_name: str):
+def get_instances(stack_name: str) -> List[dict]:
+    ec2_client = boto3.client("ec2")
     response = ec2_client.describe_instances(
         Filters=[
             {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
             {"Name": "instance-state-name", "Values": ["running", "pending"]},
         ]
     )
-    reservations = response["Reservations"]
-    return reservations[0]["Instances"] if len(reservations) > 0 else []
+    return [
+        instance
+        for reservation in response["Reservations"]
+        for instance in reservation["Instances"]
+    ]
 
 
 if __name__ == "__main__":

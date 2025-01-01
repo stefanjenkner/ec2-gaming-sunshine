@@ -10,14 +10,13 @@ Cloud Gaming powered by [Sunshine] on EC2 Spot Instances, tested with:
 Stable features:
 
 * Launch templates for both Spot and On-Demand EC2 instances
-* Minimalistic Ubuntu Linux 22.04 with [Sunshine], [Steam] and [Lutris] preinstalled
+* Minimalistic Ubuntu Linux with [Sunshine], [Steam] and [Lutris] preinstalled
 * VPC with public subnet and security groups to restrict access by IP
 * S3 bucket for fast backup/restore of the Steam Library to/from instance storage using [restic]
 
 Experimental features:
 
 * Debian Bookworm (without gamepad support at this time)
-* Ubuntu Linux 24.04 Noble (using ubuntu-drivers setup)
 
 ## Prerequisites
 
@@ -37,20 +36,20 @@ When updating CloudFormation stack, passing parameters is not required and exist
 
 Launch spot instance:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-spot,Version=\$Latest
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-spot,Version=\$Latest
 
 Launch on-demand instance:
 
-    # ubuntu jammy (22.04)
-    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
-    # or: ubuntu noble (24.04)
+    # ubuntu noble (24.04)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-on-demand,Version=\$Latest
+    # or: ubuntu jammy (22.04)
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
     # or: debian bookworm (12)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-bookworm-on-demand,Version=\$Latest
 
 Launch on-demand instance with custom instance type:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest \
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-on-demand,Version=\$Latest \
         --instance-type g5.4xlarge
 
 By default, access to the EC2 instance is restriced. To update the whitelisted IP address to the IP address of the
@@ -72,7 +71,7 @@ Login to the EC2 instance:
 
     ./connect-ssh.py --stack-name ec2-gaming-sunshine
 
-    # or: manually connect to Ubuntu (jammy) instances
+    # or: manually connect to Ubuntu (noble or jammy) instances
     ssh ubuntu@<IP>
     # or: manually connect to Debian (bookworm) instances
     ssh admin@<IP>
@@ -87,32 +86,55 @@ Install NVIDIA gaming driver and reboot:
 
     sudo reboot
 
-### Setup Sunshine
+### Set up Sunshine
+
+Login to the EC2 instance:
+
+    ./connect-ssh.py --stack-name ec2-gaming-sunshine
 
 Configure username and password for sunshine API user:
 
     https --verify=no :47990/api/password newUsername="sunshine" newPassword="sunshine" confirmNewPassword="sunshine"
 
-Add apps for different screen resolutions:
+Adjust pre-defined applications to match the client's screen resolution:
+
+    # Desktop
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="Desktop" \
+        prep-cmd:='[{"do":"bash -c \"xrandr --output DVI-D-0 --mode \\\"${SUNSHINE_CLIENT_WIDTH}x${SUNSHINE_CLIENT_HEIGHT}\\\" --rate 60\"","undo":""},{"do":"loginctl unlock-session","undo":""}]' \
+        output="" cmd:=[] index:=0 detached:=[] image-path="desktop-alt.png"
+
+Optional: add applications for different screen resolutions:
 
     # 1280x720
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x720" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="1280x720" \
+        prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x720","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     # 1280x800
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1280x800" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="1280x800" \
+        prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1280x800","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
     # 1920x1080
-    https --verify=no -a sunshine:sunshine :47990/api/apps \
-        name="1920x1080" prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
+    https --verify=no -a sunshine:sunshine :47990/api/apps name="1920x1080" \
+        prep-cmd:='[{"do":"xrandr --output DVI-D-0 --mode 1920x1080","undo":""}]' \
         output="" cmd:=[] index=-1 detached:=[] image-path="desktop-alt.png"
 
 Set a password for `sunshine` Linux user:
 
     sudo passwd sunshine
+
+## Connect Moonlight client automatically (macOS and Linux clients only)
+
+Connect and pair [Moonlight] automatically:
+
+    ./connect-moonlight.py --stack-name ec2-gaming-sunshine
+
+## Connect Moonlight client manually
+
+Login to the EC2 instance:
+
+    ./connect-ssh.py --stack-name ec2-gaming-sunshine
 
 Determine the public IPv4 address and connect via the [Moonlight] client:
 
@@ -121,6 +143,8 @@ Determine the public IPv4 address and connect via the [Moonlight] client:
 Allow connection by entering the PIN:
 
     https --verify=no -a sunshine:sunshine :47990/api/pin pin="0000"
+
+## Launch Steam
 
 Launch Steam, Login for the first time and:
 

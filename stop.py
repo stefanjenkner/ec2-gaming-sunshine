@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
+from sys import exit
 
 import boto3
+
+from helper.ec2_helper import get_one_instance
 
 DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
 
@@ -15,31 +17,31 @@ def main():
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
         default=DEFAULT_STACK_NAME,
     )
-    args = parser.parse_args()
-    stack_name = args.stack_name
-
-    client = boto3.client("ec2")
-    ec2 = boto3.resource("ec2")
-    response = client.describe_instances(
-        Filters=[
-            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
-            {"Name": "instance-state-name", "Values": ["running", "pending"]},
-        ]
+    parser.add_argument(
+        "instance_id",
+        nargs="?",
+        help="ID of the EC2 instance to stop, optional if only one running instance",
     )
-    reservations = response["Reservations"]
+    args = parser.parse_args()
 
-    if len(reservations) == 0:
-        print("No running instances found, aborting.")
-        return 1
-
-    instances = reservations[0]["Instances"]
-    for instance in instances:
+    try:
+        instance = get_one_instance(
+            args.stack_name, args.instance_id, ["running", "pending"]
+        )
         instance_id = instance["InstanceId"]
-        ec2_instance = ec2.Instance(instance_id)
-        print(f"Stopping {instance_id}")
-        response = ec2_instance.stop()
-        print(response)
+        stop_instance(instance_id)
+    except Exception as e:
+        print(e)
+        exit(1)
+
+
+def stop_instance(instance_id: str):
+    ec2 = boto3.resource("ec2")
+    ec2_instance = ec2.Instance(instance_id)
+    print(f"Stopping {instance_id}")
+    response = ec2_instance.stop()
+    print(response)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

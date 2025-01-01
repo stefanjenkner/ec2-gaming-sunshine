@@ -2,9 +2,9 @@
 
 import argparse
 import subprocess
-import sys
+from sys import exit
 
-import boto3
+from helper.ec2_helper import get_one_instance
 
 DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
 
@@ -16,41 +16,46 @@ def main():
         help=f"Name of CloudFormation stack, defaults to '{DEFAULT_STACK_NAME}'",
         default=DEFAULT_STACK_NAME,
     )
-
-    args = parser.parse_args()
-    stack_name = args.stack_name
-
-    client = boto3.client("ec2")
-    boto3.resource("ec2")
-    response = client.describe_instances(
-        Filters=[
-            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
-            {"Name": "instance-state-name", "Values": ["running", "pending"]},
-        ]
+    parser.add_argument(
+        "--forward-web",
+        help="Forward Sunshine Webinterface to https://localhost:47990/",
+        action="store_true",
     )
-    reservations = response["Reservations"]
+    parser.add_argument(
+        "instance_id",
+        nargs="?",
+        help="ID of the EC2 instance to connect to, optional if only one running instance",
+    )
+    args = parser.parse_args()
 
-    if len(reservations) == 0:
-        print("No running instances found, aborting.")
-        return 1
+    try:
+        instance = get_one_instance(
+            args.stack_name, args.instance_id, ["running", "pending"]
+        )
+        instance_id = instance["InstanceId"]
+        public_ip = instance["PublicIpAddress"]
+        tags = instance["Tags"]
+        dist = list(filter(lambda tag: tag["Key"] == "Distribution", tags))[0]["Value"]
+        connect_ssh(instance_id, public_ip, dist, args.forward_web)
+    except Exception as e:
+        print(e)
+        exit(1)
 
-    instances = reservations[0]["Instances"]
-    if len(instances) > 1:
-        print("More than one instance found, aborting.")
-        return 1
 
-    public_ip = instances[0]["PublicIpAddress"]
-    distribution = list(
-        filter(lambda tag: tag["Key"] == "Distribution", instances[0]["Tags"])
-    )[0]["Value"]
-    print(distribution)
-    print(f"Connecting to IP {public_ip}")
-
-    if distribution == "Ubuntu":
-        subprocess.run(["ssh", f"ubuntu@{public_ip}"])
-    elif distribution == "Debian":
-        subprocess.run(["ssh", f"admin@{public_ip}"])
+def connect_ssh(instance_id: str, public_ip: str, dist: str, forward_web: bool):
+    print(f"Connecting to EC2 instance {instance_id} ({dist}) using IP {public_ip}")
+    subprocess_args = ["ssh"]
+    if forward_web:
+        subprocess_args.append("-L47990:localhost:47990")
+        print("Forwarding Sunshine web-interface to: https://localhost:47990")
+    if dist == "Ubuntu":
+        subprocess_args.append(f"ubuntu@{public_ip}")
+    elif dist == "Debian":
+        subprocess_args.append(f"admin@{public_ip}")
+    else:
+        subprocess_args.append(public_ip)
+    subprocess.run(subprocess_args)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

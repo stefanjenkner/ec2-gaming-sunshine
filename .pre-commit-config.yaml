@@ -24,6 +24,14 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: coverage
+        name: Python test coverage check
+        entry: bash -c "coverage run -m unittest discover tests && coverage report -m"
+        language: system
+        pass_filenames: false
+        always_run: true
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.30.0
     hooks:

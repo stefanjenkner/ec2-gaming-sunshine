@@ -10,6 +10,14 @@ docstring-quotes = "double"
 [tool.ruff.lint.mccabe]
 max-complexity = 7
 
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+
 [tool.semantic_release]
 branch = "main"
 build_command_env = []

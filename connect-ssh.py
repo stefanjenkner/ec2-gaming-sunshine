@@ -2,10 +2,9 @@
 
 import argparse
 import subprocess
-import sys
-from typing import List
+from sys import exit
 
-import boto3
+from helper.ec2_helper import get_one_instance
 
 DEFAULT_STACK_NAME = "ec2-gaming-sunshine"
 
@@ -27,28 +26,20 @@ def main():
         nargs="?",
         help="ID of the EC2 instance to connect to, optional if only one running instance",
     )
-
     args = parser.parse_args()
-    stack_name = args.stack_name
 
-    instances = get_instances(stack_name)
-    instance_ids = [instance["InstanceId"] for instance in instances]
-    if len(instances) == 0:
-        print("No running instances found, aborting.")
-        return 1
-    elif len(instances) > 1 and args.instance_id is None:
-        print(f"More than one instance found: {instance_ids}, aborting.")
-        return 1
-    elif args.instance_id is not None and args.instance_id not in instance_ids:
-        print("Specified instance not found, aborting.")
-        return 1
-
-    instance_id = args.instance_id or instances[0]["InstanceId"]
-    instance = next(filter(lambda i: i["InstanceId"] == instance_id, instances))
-    public_ip = instance["PublicIpAddress"]
-    tags = instance["Tags"]
-    dist = list(filter(lambda tag: tag["Key"] == "Distribution", tags))[0]["Value"]
-    connect_ssh(instance_id, public_ip, dist, args.forward_web)
+    try:
+        instance = get_one_instance(
+            args.stack_name, args.instance_id, ["running", "pending"]
+        )
+        instance_id = instance["InstanceId"]
+        public_ip = instance["PublicIpAddress"]
+        tags = instance["Tags"]
+        dist = list(filter(lambda tag: tag["Key"] == "Distribution", tags))[0]["Value"]
+        connect_ssh(instance_id, public_ip, dist, args.forward_web)
+    except Exception as e:
+        print(e)
+        exit(1)
 
 
 def connect_ssh(instance_id: str, public_ip: str, dist: str, forward_web: bool):
@@ -66,20 +57,5 @@ def connect_ssh(instance_id: str, public_ip: str, dist: str, forward_web: bool):
     subprocess.run(subprocess_args)
 
 
-def get_instances(stack_name: str) -> List[dict]:
-    ec2_client = boto3.client("ec2")
-    response = ec2_client.describe_instances(
-        Filters=[
-            {"Name": "tag:Name", "Values": [f"{stack_name}-instance"]},
-            {"Name": "instance-state-name", "Values": ["running", "pending"]},
-        ]
-    )
-    return [
-        instance
-        for reservation in response["Reservations"]
-        for instance in reservation["Instances"]
-    ]
-
-
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

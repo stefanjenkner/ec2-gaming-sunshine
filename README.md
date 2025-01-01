@@ -10,14 +10,13 @@ Cloud Gaming powered by [Sunshine] on EC2 Spot Instances, tested with:
 Stable features:
 
 * Launch templates for both Spot and On-Demand EC2 instances
-* Minimalistic Ubuntu Linux 22.04 with [Sunshine], [Steam] and [Lutris] preinstalled
+* Minimalistic Ubuntu Linux with [Sunshine], [Steam] and [Lutris] preinstalled
 * VPC with public subnet and security groups to restrict access by IP
 * S3 bucket for fast backup/restore of the Steam Library to/from instance storage using [restic]
 
 Experimental features:
 
 * Debian Bookworm (without gamepad support at this time)
-* Ubuntu Linux 24.04 Noble (using ubuntu-drivers setup)
 
 ## Prerequisites
 
@@ -37,20 +36,20 @@ When updating CloudFormation stack, passing parameters is not required and exist
 
 Launch spot instance:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-spot,Version=\$Latest
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-spot,Version=\$Latest
 
 Launch on-demand instance:
 
-    # ubuntu jammy (22.04)
-    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
-    # or: ubuntu noble (24.04)
+    # ubuntu noble (24.04)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-on-demand,Version=\$Latest
+    # or: ubuntu jammy (22.04)
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest
     # or: debian bookworm (12)
     aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-bookworm-on-demand,Version=\$Latest
 
 Launch on-demand instance with custom instance type:
 
-    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-jammy-on-demand,Version=\$Latest \
+    aws ec2 run-instances --launch-template LaunchTemplateName=ec2-gaming-sunshine-noble-on-demand,Version=\$Latest \
         --instance-type g5.4xlarge
 
 By default, access to the EC2 instance is restriced. To update the whitelisted IP address to the IP address of the
@@ -72,7 +71,7 @@ Login to the EC2 instance:
 
     ./connect-ssh.py --stack-name ec2-gaming-sunshine
 
-    # or: manually connect to Ubuntu (jammy) instances
+    # or: manually connect to Ubuntu (noble or jammy) instances
     ssh ubuntu@<IP>
     # or: manually connect to Debian (bookworm) instances
     ssh admin@<IP>

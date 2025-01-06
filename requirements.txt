@@ -4,6 +4,6 @@ boto3==1.35.92
 botocore==1.35.92
 cfn-lint==1.20.2
 coverage==7.6.10
-moto==5.0.25
+moto==5.0.26
 ruff==0.8.6
 s3transfer==0.10.4
